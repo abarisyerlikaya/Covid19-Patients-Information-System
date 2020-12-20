@@ -3,20 +3,27 @@ package app;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Vector;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.JScrollPane;
 
 @SuppressWarnings("serial")
 public class DoctorsWindow extends JFrame {
-	
+
 	private AppWindow app;
 	private JPanel contentPane;
 	private JLabel title;
@@ -42,6 +49,7 @@ public class DoctorsWindow extends JFrame {
 	private JButton createDoctor;
 	private JButton updateDoctor;
 	private JButton deleteDoctor;
+	private JScrollPane scrollPane;
 
 	public DoctorsWindow(AppWindow app) {
 		this.app = app;
@@ -78,10 +86,14 @@ public class DoctorsWindow extends JFrame {
 		dash2 = new JLabel("-");
 		showResults = new JButton("Sonuçlarý Göster");
 		sortBy = new JComboBox<String>();
+		sortBy.addItem("SGK numarasýna göre sýrala");
+		sortBy.addItem("Ada göre sýrala");
+		sortBy.addItem("Soyada göre sýrala");
 		table = new JTable();
 		createDoctor = new JButton("Doktor ekle");
 		updateDoctor = new JButton("Doktor bilgilerini güncelle");
 		deleteDoctor = new JButton("Doktoru sil");
+		scrollPane = new JScrollPane(table);
 
 		// Configure components
 		title.setFont(new Font("Calibri", Font.BOLD, 16));
@@ -100,7 +112,8 @@ public class DoctorsWindow extends JFrame {
 		hospital.setColumns(10);
 		hospital.setBounds(522, 73, 151, 20);
 		showResults.setBounds(372, 198, 350, 26);
-		sortBy.setBounds(10, 198, 350, 26);		table.setBounds(10, 251, 712, 267);
+		sortBy.setBounds(10, 198, 350, 26);
+		// table.setBounds(10, 251, 712, 267);
 		minExaminationCount.setColumns(10);
 		minExaminationCount.setBounds(10, 151, 32, 20);
 		filterByExaminationCount.setBounds(10, 120, 221, 20);
@@ -116,6 +129,7 @@ public class DoctorsWindow extends JFrame {
 		deleteDoctor.setBounds(494, 529, 228, 26);
 		createDoctor.setBounds(10, 529, 228, 26);
 		updateDoctor.setBounds(250, 529, 228, 26);
+		scrollPane.setBounds(10, 251, 712, 267);
 
 		// Add components to panel
 		contentPane.add(title);
@@ -129,7 +143,6 @@ public class DoctorsWindow extends JFrame {
 		contentPane.add(hospital);
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
-		contentPane.add(table);
 		contentPane.add(minExaminationCount);
 		contentPane.add(filterByExaminationCount);
 		contentPane.add(dash1);
@@ -141,6 +154,7 @@ public class DoctorsWindow extends JFrame {
 		contentPane.add(dash2);
 		contentPane.add(deleteDoctor);
 		contentPane.add(filterByPositiveTestCount);
+		contentPane.add(scrollPane);
 
 		// Add button actions
 		back.addActionListener(new ActionListener() {
@@ -149,12 +163,141 @@ public class DoctorsWindow extends JFrame {
 				app.getFrame().setVisible(true);
 			}
 		});
-		
+
 		createDoctor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CreateDoctorWindow frame = new CreateDoctorWindow();
 				frame.setVisible(true);
 			}
 		});
+
+		showResults.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					showResults();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		deleteDoctor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				deleteDoctor((String) table.getModel().getValueAt(table.getSelectedRow(), 0));
+			}
+		});
+	}
+
+	public void showResults() throws SQLException {
+		DbConnection.connect();
+
+		String query = generateQueryFromFields();
+
+		ResultSet rs = DbConnection.select(query);
+
+		table.setModel(buildTableModel(rs));
+
+		DbConnection.disconnect();
+	}
+
+	public String generateQueryFromFields() {
+		String query = "SELECT * FROM doctor";
+
+		// First name
+		if (firstName.getText().length() > 0) {
+			String newQuery = "SELECT * FROM doctor WHERE first_name = '" + firstName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Last name
+		if (lastName.getText().length() > 0) {
+			String newQuery = "SELECT * FROM doctor WHERE last_name = '" + lastName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// City
+		if (city.getText().length() > 0) {
+			String newQuery = "SELECT d.* FROM doctor d, hospital h WHERE h.id = d.hospital_id AND h.city = '"
+					+ city.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Hospital
+		if (hospital.getText().length() > 0) {
+			String newQuery = "SELECT d.* FROM doctor d, hospital h WHERE h.id = d.hospital_id AND h.name = '"
+					+ hospital.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Min examination count
+		if (minExaminationCount.getText().length() > 0 && minExaminationCount.getText().compareTo("0") != 0) {
+			String newQuery = "SELECT d.* FROM (SELECT doc_ssn, count(*) FROM examination GROUP BY doc_ssn HAVING count(*) >= "
+					+ minExaminationCount.getText() + ") q, doctor d WHERE q.doc_ssn = d.ssn";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Max examination count
+		if (maxExaminationCount.getText().length() > 0) {
+			String newQuery = "SELECT * FROM doctor EXCEPT SELECT d.* FROM (SELECT doc_ssn, count(*) FROM examination GROUP BY doc_ssn HAVING count(*) >="
+					+ maxExaminationCount.getText() + ") q, doctor d WHERE q.doc_ssn = d.ssn";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Min positive test count
+		if (minPositiveTestCount.getText().length() > 0 && minPositiveTestCount.getText().compareTo("0") != 0) {
+			String newQuery = "SELECT d.* FROM (SELECT doc_ssn, count(*) FROM examination WHERE test_result = TRUE GROUP BY doc_ssn HAVING count(*) >=  "
+					+ minPositiveTestCount.getText() + ") q, doctor d WHERE q.doc_ssn = d.ssn";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Max positive test count
+		if (maxPositiveTestCount.getText().length() > 0) {
+			String newQuery = "SELECT * FROM doctor EXCEPT SELECT d.* FROM (SELECT doc_ssn, count(*) FROM examination WHERE test_result = TRUE GROUP BY doc_ssn HAVING count(*) >="
+					+ maxPositiveTestCount.getText() + ") q, doctor d WHERE q.doc_ssn = d.ssn";
+			query = query + " INTERSECT " + newQuery;
+		}
+
+		// Order by ...
+		if (sortBy.getSelectedIndex() == 0)
+			query += " ORDER BY ssn";
+		else if (sortBy.getSelectedIndex() == 1)
+			query += " ORDER BY first_name";
+		else
+			query += " ORDER BY last_name";
+
+		return query;
+	}
+
+	public void deleteDoctor(String ssn) {
+		DbConnection.connect();
+		DbConnection.update("DELETE FROM doctor WHERE ssn = '" + ssn + "'");
+		DbConnection.disconnect();
+	}
+
+	public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		// names of columns
+		Vector<String> columnNames = new Vector<String>();
+
+		int columnCount = metaData.getColumnCount();
+
+		columnNames.add("SGK Numarasý");
+		columnNames.add("Adý");
+		columnNames.add("Soyadý");
+		columnNames.add("Çalýþtýðý Hastane No");
+
+		// data of the table
+		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		while (rs.next()) {
+			Vector<Object> vector = new Vector<Object>();
+			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+				vector.add(rs.getObject(columnIndex));
+			}
+			data.add(vector);
+		}
+
+		return new DefaultTableModel(data, columnNames);
 	}
 }
