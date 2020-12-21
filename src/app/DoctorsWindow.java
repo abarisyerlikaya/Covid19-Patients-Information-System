@@ -166,8 +166,12 @@ public class DoctorsWindow extends JFrame {
 
 		createDoctor.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				CreateDoctorWindow frame = new CreateDoctorWindow();
-				frame.setVisible(true);
+				try {
+					CreateDoctorWindow frame = new CreateDoctorWindow();
+					frame.setVisible(true);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 			}
 		});
 
@@ -175,6 +179,24 @@ public class DoctorsWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					showResults();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		updateDoctor.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String ssn_pkey = (String) table.getModel().getValueAt(table.getSelectedRow(), 0);
+				String first_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 1);
+				String last_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 2);
+				String hospital_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 3);
+				UpdateDoctorWindow frame;
+				
+				try {
+					frame = new UpdateDoctorWindow(ssn_pkey, first_name, last_name, hospital_name);
+					frame.setVisible(true);
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -193,9 +215,7 @@ public class DoctorsWindow extends JFrame {
 		DbConnection.connect();
 
 		String query = generateQueryFromFields();
-
 		ResultSet rs = DbConnection.select(query);
-
 		table.setModel(buildTableModel(rs));
 
 		DbConnection.disconnect();
@@ -289,15 +309,25 @@ public class DoctorsWindow extends JFrame {
 		columnNames.add("Çalýþtýðý Hastane No");
 
 		// data of the table
+		DbConnection.connect();
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		while (rs.next()) {
 			Vector<Object> vector = new Vector<Object>();
 			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-				vector.add(rs.getObject(columnIndex));
+				// If column is hospital id, set hospital name instead of id
+				if (columnIndex == 4) {
+
+					ResultSet hospital = DbConnection
+							.select("SELECT * FROM hospital WHERE id = " + rs.getString(columnIndex));
+					hospital.next();
+					vector.add(hospital.getString("name"));
+
+				} else
+					vector.add(rs.getObject(columnIndex));
 			}
 			data.add(vector);
 		}
-
+		DbConnection.disconnect();
 		return new DefaultTableModel(data, columnNames);
 	}
 }

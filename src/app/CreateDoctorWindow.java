@@ -6,9 +6,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class CreateDoctorWindow extends JFrame {
@@ -25,11 +30,11 @@ public class CreateDoctorWindow extends JFrame {
 	private JComboBox<String> hospital;
 	private JButton submit;
 
-	public CreateDoctorWindow() {
+	public CreateDoctorWindow() throws SQLException {
 		initialize();
 	}
 
-	public void initialize() {
+	public void initialize() throws SQLException {
 		// Configure frame
 		setResizable(false);
 		setBounds(150, 150, 230, 336);
@@ -78,5 +83,45 @@ public class CreateDoctorWindow extends JFrame {
 		contentPane.add(ssnLabel);
 		contentPane.add(firstName);
 		contentPane.add(submit);
+
+		// Add hospital names as options
+		DbConnection.connect();
+		ResultSet rs = DbConnection.select("SELECT name FROM hospital");
+		while (rs.next())
+			hospital.addItem(rs.getString("name"));
+		DbConnection.disconnect();
+
+		// Add action listeners
+		submit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					createDoctor();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+	}
+
+	public void createDoctor() throws SQLException{
+		String ssn_pkey = ssn.getText();
+		String first_name = firstName.getText();
+		String last_name = lastName.getText();
+		String hospital_name = (String) hospital.getSelectedItem();
+		String hospital_id;
+
+		DbConnection.connect();
+
+		ResultSet rs = DbConnection.select("SELECT id FROM hospital WHERE name = '" + hospital_name + "'");
+		rs.next();
+		hospital_id = rs.getString("id");
+
+		DbConnection.update("INSERT INTO doctor VALUES('" + ssn_pkey + "', '" + first_name + "', '" + last_name + "', "
+				+ hospital_id + ")");
+
+		DbConnection.disconnect();
+		
+		setVisible(false);
 	}
 }

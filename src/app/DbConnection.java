@@ -12,7 +12,7 @@ public class DbConnection {
 
 	static void connect() {
 		try {
-			conn = DriverManager.getConnection(url, "postgres", "1234");
+			conn = DriverManager.getConnection(url, "postgres", "0852");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
