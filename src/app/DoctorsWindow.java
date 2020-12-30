@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Vector;
 
 import javax.swing.JComboBox;
@@ -67,31 +66,31 @@ public class DoctorsWindow extends JFrame {
 		setResizable(false);
 
 		// Create components
-		title = new JLabel("DOKTOR BÝLGÝSÝ");
+		title = new JLabel("DOKTOR BILGISI");
 		back = new JButton("< Geri");
-		filterByName = new JLabel("Ad ve soyada göre filtrele");
+		filterByName = new JLabel("Ad ve soyada gore filtrele");
 		firstName = new JTextField();
 		lastName = new JTextField();
-		filterByCity = new JLabel("Þehre göre filtrele:");
+		filterByCity = new JLabel("Sehre gore filtrele:");
 		city = new JTextField();
-		filterByHospital = new JLabel("Çalýþtýðý hastaneye göre filtrele:");
+		filterByHospital = new JLabel("Hastaneye gore filtrele:");
 		hospital = new JTextField();
-		filterByExaminationCount = new JLabel("Toplam muayene sayýsýna göre filtrele:");
+		filterByExaminationCount = new JLabel("Toplam muayene sayisina gore filtrele:");
 		minExaminationCount = new JTextField();
 		maxExaminationCount = new JTextField();
 		dash1 = new JLabel("-");
-		filterByPositiveTestCount = new JLabel("Pozitif sonuçlu muayene sayýsýna göre filtrele:");
+		filterByPositiveTestCount = new JLabel("Pozitif sonuclu muayene sayisina gore filtrele:");
 		minPositiveTestCount = new JTextField();
 		maxPositiveTestCount = new JTextField();
 		dash2 = new JLabel("-");
-		showResults = new JButton("Sonuçlarý Göster");
+		showResults = new JButton("Sonuclari Goster");
 		sortBy = new JComboBox<String>();
-		sortBy.addItem("SGK numarasýna göre sýrala");
-		sortBy.addItem("Ada göre sýrala");
-		sortBy.addItem("Soyada göre sýrala");
+		sortBy.addItem("SGK numarasina gore sirala");
+		sortBy.addItem("Ada gore sirala");
+		sortBy.addItem("Soyada gore sirala");
 		table = new JTable();
 		createDoctor = new JButton("Doktor ekle");
-		updateDoctor = new JButton("Doktor bilgilerini güncelle");
+		updateDoctor = new JButton("Doktor bilgilerini gï¿½ncelle");
 		deleteDoctor = new JButton("Doktoru sil");
 		scrollPane = new JScrollPane(table);
 
@@ -113,7 +112,6 @@ public class DoctorsWindow extends JFrame {
 		hospital.setBounds(522, 73, 151, 20);
 		showResults.setBounds(372, 198, 350, 26);
 		sortBy.setBounds(10, 198, 350, 26);
-		// table.setBounds(10, 251, 712, 267);
 		minExaminationCount.setColumns(10);
 		minExaminationCount.setBounds(10, 151, 32, 20);
 		filterByExaminationCount.setBounds(10, 120, 221, 20);
@@ -180,7 +178,6 @@ public class DoctorsWindow extends JFrame {
 				try {
 					showResults();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
@@ -192,10 +189,9 @@ public class DoctorsWindow extends JFrame {
 				String first_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 1);
 				String last_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 2);
 				String hospital_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 3);
-				UpdateDoctorWindow frame;
 				
 				try {
-					frame = new UpdateDoctorWindow(ssn_pkey, first_name, last_name, hospital_name);
+					UpdateDoctorWindow frame = new UpdateDoctorWindow(ssn_pkey, first_name, last_name, hospital_name);
 					frame.setVisible(true);
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
@@ -279,10 +275,13 @@ public class DoctorsWindow extends JFrame {
 		}
 
 		// Order by ...
+		// SSN
 		if (sortBy.getSelectedIndex() == 0)
 			query += " ORDER BY ssn";
+		// First name
 		else if (sortBy.getSelectedIndex() == 1)
 			query += " ORDER BY first_name";
+		// Last name
 		else
 			query += " ORDER BY last_name";
 
@@ -303,10 +302,10 @@ public class DoctorsWindow extends JFrame {
 
 		int columnCount = metaData.getColumnCount();
 
-		columnNames.add("SGK Numarasý");
-		columnNames.add("Adý");
-		columnNames.add("Soyadý");
-		columnNames.add("Çalýþtýðý Hastane No");
+		columnNames.add("SGK Numarasi");
+		columnNames.add("Adi");
+		columnNames.add("Soyadi");
+		columnNames.add("Hastane");
 
 		// data of the table
 		DbConnection.connect();

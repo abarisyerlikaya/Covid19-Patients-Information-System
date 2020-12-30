@@ -33,11 +33,11 @@ public class CreateHospitalWindow extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		cityLabel = new JLabel("Bulunduðu Þehir:");
+		cityLabel = new JLabel("Bulundugu Sehir:");
 		name = new JTextField();
 		city = new JComboBox<String>();
-		nameLabel = new JLabel("Adý:");
-		title = new JLabel("YENÝ HASTANE");
+		nameLabel = new JLabel("Adi:");
+		title = new JLabel("YENI HASTANE");
 		submit = new JButton("Ekle");
 		cityLabel.setBounds(10, 98, 194, 14);
 		city.setBounds(10, 123, 194, 22);

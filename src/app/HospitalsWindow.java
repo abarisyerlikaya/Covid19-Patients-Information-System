@@ -56,25 +56,25 @@ public class HospitalsWindow extends JFrame {
 		setResizable(false);
 
 		// Create components
-		title = new JLabel("HASTANE BÝLGÝSÝ");
+		title = new JLabel("HASTANE BILGISI");
 		back = new JButton("< Geri");
-		filterByExaminationCount = new JLabel("Muayene sayýsýna göre filtrele:");
+		filterByExaminationCount = new JLabel("Muayene sayisina gore filtrele:");
 		minExaminationCount = new JTextField();
 		maxExaminationCount = new JTextField();
 		dash1 = new JLabel("-");
-		filterByPositiveTestCount = new JLabel("Pozitif sonuç sayýsýna göre filtrele:");
+		filterByPositiveTestCount = new JLabel("Pozitif sonuc sayisina gore filtrele:");
 		minPositiveTestCount = new JTextField();
 		maxPositiveTestCount = new JTextField();
 		dash2 = new JLabel("-");
-		filterByPositiveTestPercentage = new JLabel("Pozitif sonuç yüzdesine göre filtrele:");
+		filterByPositiveTestPercentage = new JLabel("Pozitif sonuc yuzdesine gore filtrele:");
 		minPositiveTestPercentage = new JTextField();
 		maxPositiveTestPercentage = new JTextField();
 		dash3 = new JLabel("-");
-		showResults = new JButton("Sonuçlarý Göster");
+		showResults = new JButton("Sonuclari Goster");
 		sortBy = new JComboBox<String>();
 		table = new JTable();
 		createHospital = new JButton("Hastane ekle");
-		updateHospital = new JButton("Hastane bilgilerini güncelle");
+		updateHospital = new JButton("Hastane bilgilerini guncelle");
 		deleteHospital = new JButton("Hastaneyi sil");
 
 		// Configure components

@@ -40,13 +40,13 @@ public class CreateExaminationWindow extends JFrame {
 
 		// Create components
 		testResultLabel = new JLabel("Test Sonucu:");
-		tcknLabel = new JLabel("Hastanýn TCKN'si:");
-		hospitalLabel = new JLabel("Yapýldýðý Hastane:");
+		tcknLabel = new JLabel("Hastanin TCKN'si:");
+		hospitalLabel = new JLabel("Yapildigi Hastane:");
 		tckn = new JTextField();
 		ssn = new JTextField();
 		hospital = new JComboBox<String>();
 		ssnLabel = new JLabel("Yapan Doktorun SGK No'su:");
-		title = new JLabel("YENÝ MUAYENE");
+		title = new JLabel("YENI MUAYENE");
 		submit = new JButton("Ekle");
 		testResult = new JComboBox<String>();
 

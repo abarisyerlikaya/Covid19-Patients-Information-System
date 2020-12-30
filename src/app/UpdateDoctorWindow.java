@@ -55,15 +55,15 @@ public class UpdateDoctorWindow extends JFrame {
 
 		// Create components
 		lastName = new JTextField();
-		lastNameLabel = new JLabel("Soyadý:");
-		firstNameLabel = new JLabel("Adý:");
-		hospitalLabel = new JLabel("Çalýþtýðý Hastane:");
+		lastNameLabel = new JLabel("Soyadi:");
+		firstNameLabel = new JLabel("Adi:");
+		hospitalLabel = new JLabel("Calistigi:");
 		firstName = new JTextField();
 		ssn = new JTextField();
 		hospital = new JComboBox<String>();
-		ssnLabel = new JLabel("Sosyal Güvenlik Numarasý:");
-		title = new JLabel("DOKTOR BÝLGÝLERÝ");
-		submit = new JButton("Güncelle");
+		ssnLabel = new JLabel("Sosyal Guvenlik Numarasi:");
+		title = new JLabel("DOKTOR BILGILERI");
+		submit = new JButton("Guncelle");
 
 		// Configure components
 		firstNameLabel.setBounds(10, 98, 194, 14);

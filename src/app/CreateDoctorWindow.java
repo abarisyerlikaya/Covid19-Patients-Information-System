@@ -45,14 +45,14 @@ public class CreateDoctorWindow extends JFrame {
 
 		// Create components
 		lastName = new JTextField();
-		lastNameLabel = new JLabel("Soyadý:");
-		firstNameLabel = new JLabel("Adý:");
-		hospitalLabel = new JLabel("Çalýþtýðý Hastane:");
+		lastNameLabel = new JLabel("Soyadi:");
+		firstNameLabel = new JLabel("Adi:");
+		hospitalLabel = new JLabel("Hastane:");
 		firstName = new JTextField();
 		ssn = new JTextField();
 		hospital = new JComboBox<String>();
-		ssnLabel = new JLabel("Sosyal Güvenlik Numarasý:");
-		title = new JLabel("YENÝ DOKTOR");
+		ssnLabel = new JLabel("Sosyal Guvenlik Numarasi:");
+		title = new JLabel("YENI DOKTOR");
 		submit = new JButton("Ekle");
 
 		// Configure components
@@ -97,7 +97,6 @@ public class CreateDoctorWindow extends JFrame {
 				try {
 					createDoctor();
 				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}

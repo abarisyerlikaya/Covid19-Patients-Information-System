@@ -30,24 +30,25 @@ public class UpdatePatientWindow extends JFrame {
 	private JLabel lastNameLabel;
 	private JTextField lastName;
 	private JLabel statusLabel;
-	private JTextField status;
 	private JLabel bloodTypeLabel;
 	private JComboBox<String> bloodType;
 	private JLabel birthDateLabel_1;
 	private JTextField birthMonth;
 	private JLabel birthDateLabel_2;
 	private JTextField birthYear;
-	private int defaultTckn;
-	private Calendar defaultDate;
+	private String defaultTckn;
+	private String defaultDate;
 	private String defaultFirstName;
 	private String defaultLastName;
-	private char defaultGender;
+	private String defaultGender;
 	private String defaultBloodType;
 	private String defaultCronicalIllnesses;
 	private String defaultStatus;
+	private JComboBox status;
 
-	public UpdatePatientWindow(int defaultTckn, Calendar defaultDate, String defaultFirstName, String defaultLastName,
-			char defaultGender, String defaultBloodType, String defaultCronicalIllnesses, String defaultStatus) {
+	public UpdatePatientWindow(String defaultTckn, String defaultFirstName, String defaultLastName,
+			String defaultGender, String defaultDate, String defaultBloodType, String defaultCronicalIllnesses,
+			String defaultStatus) {
 		this.defaultTckn = defaultTckn;
 		this.defaultDate = defaultDate;
 		this.defaultFirstName = defaultFirstName;
@@ -70,27 +71,27 @@ public class UpdatePatientWindow extends JFrame {
 
 		// Create components
 		cronicalIllnesses = new JTextField();
-		cronicalIlnessesLabel = new JLabel("Varsa Kronik Rahatsýzlýðý:");
-		firstNameLabel = new JLabel("Adý:");
+		cronicalIlnessesLabel = new JLabel("Varsa Kronik Rahatsï¿½zlï¿½ï¿½ï¿½:");
+		firstNameLabel = new JLabel("Adï¿½:");
 		genderLabel = new JLabel("Cinsiyet:");
 		firstName = new JTextField();
 		tckn = new JTextField();
 		gender = new JComboBox<String>();
 		tcknLabel = new JLabel("TCKN:");
-		title = new JLabel("YENÝ HASTA");
-		submit = new JButton("Ekle");
-		birthDateLabel = new JLabel("Doðum Tarihi:");
-		statusLabel = new JLabel("Gerkliyse Þu Anki Durumu:");
+		title = new JLabel("HASTA BILGILERI");
+		submit = new JButton("Guncelle");
+		birthDateLabel = new JLabel("Doï¿½um Tarihi:");
+		statusLabel = new JLabel("Gerkliyse ï¿½u Anki Durumu:");
 		bloodTypeLabel = new JLabel("Kan Grubu:");
-		lastNameLabel = new JLabel("Soyadý:");
+		lastNameLabel = new JLabel("Soyadï¿½:");
 		birthDay = new JTextField();
 		lastName = new JTextField();
-		status = new JTextField();
 		bloodType = new JComboBox<String>();
 		birthDateLabel_1 = new JLabel("/");
 		birthMonth = new JTextField();
 		birthDateLabel_2 = new JLabel("/");
 		birthYear = new JTextField();
+		status = new JComboBox();
 
 		// Configure components
 		firstNameLabel.setBounds(10, 98, 194, 14);
@@ -99,6 +100,9 @@ public class UpdatePatientWindow extends JFrame {
 		cronicalIlnessesLabel.setBounds(10, 212, 194, 14);
 		genderLabel.setBounds(10, 154, 194, 14);
 		gender.setBounds(10, 179, 194, 22);
+		gender.addItem("Erkek");
+		gender.addItem("Kadin");
+		gender.addItem("Diger");
 		submit.setBounds(10, 268, 404, 23);
 		title.setFont(new Font("Calibri", Font.BOLD, 16));
 		title.setHorizontalAlignment(SwingConstants.CENTER);
@@ -115,16 +119,26 @@ public class UpdatePatientWindow extends JFrame {
 		lastName.setColumns(10);
 		lastName.setBounds(220, 123, 194, 20);
 		statusLabel.setBounds(220, 212, 194, 14);
-		status.setColumns(10);
-		status.setBounds(220, 237, 194, 20);
 		bloodTypeLabel.setBounds(220, 154, 194, 14);
 		bloodType.setBounds(220, 179, 194, 22);
+		bloodType.addItem("0-");
+		bloodType.addItem("0+");
+		bloodType.addItem("A-");
+		bloodType.addItem("A+");
+		bloodType.addItem("B-");
+		bloodType.addItem("B+");
+		bloodType.addItem("AB-");
+		bloodType.addItem("AB+");
 		birthDateLabel_1.setBounds(250, 70, 4, 14);
 		birthMonth.setColumns(10);
 		birthMonth.setBounds(264, 67, 20, 20);
 		birthDateLabel_2.setBounds(294, 70, 4, 14);
 		birthYear.setColumns(10);
 		birthYear.setBounds(308, 67, 36, 20);
+		status.setBounds(220, 236, 194, 22);
+		status.addItem("waiting tests");
+		status.addItem("positive");
+		status.addItem("negative");
 
 		// Add components to panel
 		contentPane.add(firstNameLabel);
@@ -142,12 +156,30 @@ public class UpdatePatientWindow extends JFrame {
 		contentPane.add(lastNameLabel);
 		contentPane.add(lastName);
 		contentPane.add(statusLabel);
-		contentPane.add(status);
 		contentPane.add(bloodTypeLabel);
 		contentPane.add(bloodType);
 		contentPane.add(birthDateLabel_1);
 		contentPane.add(birthMonth);
 		contentPane.add(birthDateLabel_2);
 		contentPane.add(birthYear);
+		contentPane.add(status);
+
+		// Set initial values
+		tckn.setText(defaultTckn);
+		firstName.setText(defaultFirstName);
+		lastName.setText(defaultLastName);
+		if (defaultGender.equals("M"))
+			gender.setSelectedIndex(0);
+		else if (defaultGender.equals("F"))
+			gender.setSelectedIndex(1);
+		else
+			gender.setSelectedIndex(2);
+		birthYear.setText(defaultDate.split("-")[0]);
+		birthMonth.setText(defaultDate.split("-")[1]);
+		birthDay.setText(defaultDate.split("-")[2]);
+		bloodType.setSelectedItem(defaultBloodType);
+		cronicalIllnesses.setText(defaultCronicalIllnesses);
+		status.setSelectedItem(defaultStatus);
+
 	}
 }
