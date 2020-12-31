@@ -59,5 +59,14 @@ public class UpdateHospitalWindow extends JFrame {
 		contentPane.add(name);
 		contentPane.add(nameLabel);
 		contentPane.add(submit);
+		
+	
+		
+		
+		
 	}
+	
+	
+	
+
 }

@@ -3,11 +3,16 @@ package app;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Vector;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -27,10 +32,6 @@ public class CitiesWindow extends JFrame {
 	private JLabel filterByPositiveTestCount;
 	private JTextField maxPositiveTestCount;
 	private JTextField minPositiveTestCount;
-	private JLabel dash2;
-	private JLabel filterByPositiveTestPercentage;
-	private JTextField maxPositiveTestPercentage;
-	private JTextField minPositiveTestPercentage;
 	private JLabel dash3;
 	private JComboBox<String> sortBy;
 	private JButton showResults;
@@ -62,12 +63,96 @@ public class CitiesWindow extends JFrame {
 		filterByPositiveTestCount = new JLabel("Pozitif sonuc sayisina gore filtrele:");
 		minPositiveTestCount = new JTextField();
 		maxPositiveTestCount = new JTextField();
-		dash2 = new JLabel("-");
-		filterByPositiveTestPercentage = new JLabel("Pozitif sonuc yuzdesine gore filtrele:");
-		minPositiveTestPercentage = new JTextField();
-		maxPositiveTestPercentage = new JTextField();
 		dash3 = new JLabel("-");
 		showResults = new JButton("Sonuclari Goster");
+		
+		
+		
+		
+		
+		
+		
+		showResults.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				
+				Showresults();
+				
+			}
+			
+			
+			
+			
+			
+			public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
+
+				ResultSetMetaData metaData = rs.getMetaData();
+
+				// names of columns
+				Vector<String> columnNames = new Vector<String>();
+				int columnCount = metaData.getColumnCount();
+
+				columnNames.add("Sehir");
+				
+
+				// data of the table
+				Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+				while (rs.next()) {
+					Vector<Object> vector = new Vector<Object>();
+					for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+						vector.add(rs.getObject(columnIndex));
+					}
+					data.add(vector);
+				}
+
+				return new DefaultTableModel(data, columnNames);
+
+			}
+			
+			
+			public void Showresults() {
+				DbConnection.connect();
+				String query;
+				query = "select h.city from hospital h,examination e where h.id= e.hospital_id group by h.city ";
+				if(maxExaminationCount.getText().length()>0) {
+					int maxexam = Integer.parseInt(maxExaminationCount.getText());
+					String add = "Select h.city from hospital h, examination e where h.id=e.hospital_id  group by h.city having count(*) <"+maxexam;
+					query+= "intersect "+add;
+				}
+				if(minExaminationCount.getText().length()>0) {
+					int minexam = Integer.parseInt(minExaminationCount.getText());
+					String add = "select h.city from hospital h, examination e  where h.id=e.hospital_id group by h.city having count(*) > "+minexam;
+					query+= " intersect "+add;
+				}
+				if(minPositiveTestCount.getText().length()>0) {
+					int minpositive = Integer.parseInt(minPositiveTestCount.getText());
+					String add = "select h.city from hospital h,examination e where h.id = e.hospital_id and e.test_result= true group by h.city having count(*)>"+minpositive;
+					query+= " intersect "+add;
+				}
+				if(maxPositiveTestCount.getText().length()>0) {
+					int maxpositive = Integer.parseInt(maxPositiveTestCount.getText());
+					String add = "select h.city from hospital h, examination e where h.id = e.hospital_id and e.test_result = true group by h.city having count(*)<"+maxpositive;
+					query+= " intersect "+add;
+				}
+				
+				if(sortBy.getSelectedIndex()==1) {
+					String add = "select h.city from hospital h, examination e where h.id=e.hospital_id and e.test_result != true group by h.city ";
+				
+					query+= " intersect "+add;
+				}
+				System.out.println(query);
+				ResultSet rs = DbConnection.select(query);
+				try {
+					table.setModel(buildTableModel(rs));
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				DbConnection.disconnect();
+				
+			}
+			
+		});
 		sortBy = new JComboBox<String>();
 
 		// Configure components
@@ -81,12 +166,6 @@ public class CitiesWindow extends JFrame {
 		maxExaminationCount.setColumns(10);
 		maxExaminationCount.setBounds(66, 73, 32, 20);
 		dash1.setBounds(52, 76, 4, 14);
-		filterByPositiveTestPercentage.setBounds(266, 42, 212, 20);
-		minPositiveTestPercentage.setColumns(10);
-		minPositiveTestPercentage.setBounds(266, 73, 32, 20);
-		maxPositiveTestPercentage.setColumns(10);
-		maxPositiveTestPercentage.setBounds(322, 73, 32, 20);
-		dash2.setBounds(308, 76, 4, 14);
 		filterByPositiveTestCount.setBounds(522, 42, 200, 20);
 		minPositiveTestCount.setColumns(10);
 		minPositiveTestCount.setBounds(522, 73, 32, 20);
@@ -105,11 +184,6 @@ public class CitiesWindow extends JFrame {
 		contentPane.add(maxExaminationCount);
 		contentPane.add(dash1);
 
-		contentPane.add(filterByPositiveTestPercentage);
-		contentPane.add(minPositiveTestPercentage);
-		contentPane.add(maxPositiveTestPercentage);
-		contentPane.add(dash2);
-
 		contentPane.add(filterByPositiveTestCount);
 		contentPane.add(minPositiveTestCount);
 		contentPane.add(maxPositiveTestCount);
@@ -117,6 +191,10 @@ public class CitiesWindow extends JFrame {
 
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
+		
+		//Add components to ComboBox
+		sortBy.addItem("Lutfen Bir Siralama Olcutu Seciniz");
+		sortBy.addItem("Hic Vaka Olmayan Sehirler");
 
 		table = new JTable();
 		table.setBounds(10, 167, 712, 267);

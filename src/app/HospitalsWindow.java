@@ -3,11 +3,16 @@ package app;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Vector;
 
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -27,18 +32,12 @@ public class HospitalsWindow extends JFrame {
 	private JLabel filterByPositiveTestCount;
 	private JTextField maxPositiveTestCount;
 	private JTextField minPositiveTestCount;
-	private JLabel dash2;
-	private JLabel filterByPositiveTestPercentage;
-	private JTextField maxPositiveTestPercentage;
-	private JTextField minPositiveTestPercentage;
 	private JLabel dash3;
 	private JComboBox<String> sortBy;
 	private JButton showResults;
 	private JButton back;
 	private JTable table;
 	private JButton createHospital;
-	private JButton updateHospital;
-	private JButton deleteHospital;
 
 	public HospitalsWindow(AppWindow app) {
 		this.app = app;
@@ -65,17 +64,116 @@ public class HospitalsWindow extends JFrame {
 		filterByPositiveTestCount = new JLabel("Pozitif sonuc sayisina gore filtrele:");
 		minPositiveTestCount = new JTextField();
 		maxPositiveTestCount = new JTextField();
-		dash2 = new JLabel("-");
-		filterByPositiveTestPercentage = new JLabel("Pozitif sonuc yuzdesine gore filtrele:");
-		minPositiveTestPercentage = new JTextField();
-		maxPositiveTestPercentage = new JTextField();
 		dash3 = new JLabel("-");
 		showResults = new JButton("Sonuclari Goster");
+		showResults.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+		
+				try {
+					Showtable();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				
+			}
+			public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
+
+				ResultSetMetaData metaData = rs.getMetaData();
+
+				// names of columns
+				Vector<String> columnNames = new Vector<String>();
+				int columnCount = metaData.getColumnCount();
+
+				columnNames.add("ID");
+				columnNames.add("Adi");
+				columnNames.add("Sehir");
+
+				// data of the table
+				Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+				while (rs.next()) {
+					Vector<Object> vector = new Vector<Object>();
+					for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+						vector.add(rs.getObject(columnIndex));
+					}
+					data.add(vector);
+				}
+
+				return new DefaultTableModel(data, columnNames);
+
+			}
+			
+			
+			public void Showtable() throws SQLException {
+				DbConnection.connect();
+				
+				
+				
+				
+			
+				String query = "select id,name,city from hospital ";
+				
+				if(maxExaminationCount.getText().length()>0) {
+					int maxexamination = Integer.parseInt(maxExaminationCount.getText());
+					String query1 ="select h.id, h.name, h.city from examination e, hospital h where e.hospital_id = h.id group by h.id,h.name,h.city ";
+					
+					String addition = " having count(*) < "+maxexamination;
+					
+					
+					query = query + " intersect "+ query1;
+				}
+				if(minExaminationCount.getText().length()>0) {
+					int minexamination = Integer.parseInt(minExaminationCount.getText());
+					String query1 = "select h.id, h.name, h.city " + 
+							"from examination e, hospital h " + 
+							"where e.hospital_id = h.id " + 
+							"group by h.id, h.name, h.city, e.hospital_id ";
+					String addition = "having count(*) > "+minexamination;
+					
+					
+					query = query +" intersect "+query1;
+					
+				}
+				if(minPositiveTestCount.getText().length()>0) {
+					int minpositive = Integer.parseInt(minPositiveTestCount.getText());
+					String query1 = "select h.id, h.name, h.city  " + 
+							"from examination e, hospital h " + 
+							"where e.hospital_id = h.id and e.test_result = true " + 
+							"group by h.id, h.name, h.city, e.hospital_id having count(*) > "+minpositive;
+					
+					query = query + "intersect "+ query1;
+					
+				}
+				if(maxPositiveTestCount.getText().length()>0) {
+					int maxpositive = Integer.parseInt(maxPositiveTestCount.getText());
+					String query1 = "select h.id, h.name, h.city  " + 
+							"from examination e, hospital h " + 
+							"where e.hospital_id = h.id and e.test_result = true " + 
+							"group by h.id, h.name, h.city, e.hospital_id having count(*) < "+maxpositive+" "  ;
+					
+					query = query + "intersect "+ query1;
+					
+				}
+				
+				switch(sortBy.getSelectedIndex()) {
+				case 1: 
+					query+= " order by id";
+					break;
+				case 2:
+					query+= " order by name";
+					break;
+				case 3:
+					query+= " order by city";
+					break;
+				}
+				
+				ResultSet rs = DbConnection.select(query);
+				table.setModel(buildTableModel(rs));
+				DbConnection.disconnect();
+			}
+		});
 		sortBy = new JComboBox<String>();
 		table = new JTable();
 		createHospital = new JButton("Hastane ekle");
-		updateHospital = new JButton("Hastane bilgilerini guncelle");
-		deleteHospital = new JButton("Hastaneyi sil");
 
 		// Configure components
 		title.setFont(new Font("Calibri", Font.BOLD, 16));
@@ -88,12 +186,6 @@ public class HospitalsWindow extends JFrame {
 		maxExaminationCount.setColumns(10);
 		maxExaminationCount.setBounds(66, 73, 32, 20);
 		dash1.setBounds(52, 76, 4, 14);
-		filterByPositiveTestPercentage.setBounds(266, 42, 212, 20);
-		minPositiveTestPercentage.setColumns(10);
-		minPositiveTestPercentage.setBounds(266, 73, 32, 20);
-		maxPositiveTestPercentage.setColumns(10);
-		maxPositiveTestPercentage.setBounds(322, 73, 32, 20);
-		dash2.setBounds(308, 76, 4, 14);
 		filterByPositiveTestCount.setBounds(522, 42, 200, 20);
 		minPositiveTestCount.setColumns(10);
 		minPositiveTestCount.setBounds(522, 73, 32, 20);
@@ -103,9 +195,7 @@ public class HospitalsWindow extends JFrame {
 		showResults.setBounds(372, 116, 350, 26);
 		sortBy.setBounds(10, 116, 350, 26);
 		table.setBounds(10, 167, 712, 267);
-		deleteHospital.setBounds(494, 445, 228, 26);
-		createHospital.setBounds(10, 445, 228, 26);
-		updateHospital.setBounds(250, 445, 228, 26);
+		createHospital.setBounds(10, 445, 712, 26);
 
 		// Add components to panel
 		contentPane.add(title);
@@ -114,10 +204,6 @@ public class HospitalsWindow extends JFrame {
 		contentPane.add(minExaminationCount);
 		contentPane.add(maxExaminationCount);
 		contentPane.add(dash1);
-		contentPane.add(filterByPositiveTestPercentage);
-		contentPane.add(minPositiveTestPercentage);
-		contentPane.add(maxPositiveTestPercentage);
-		contentPane.add(dash2);
 		contentPane.add(filterByPositiveTestCount);
 		contentPane.add(minPositiveTestCount);
 		contentPane.add(maxPositiveTestCount);
@@ -125,10 +211,14 @@ public class HospitalsWindow extends JFrame {
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
 		contentPane.add(table);
-		contentPane.add(deleteHospital);
 		contentPane.add(createHospital);
-		contentPane.add(updateHospital);
-
+		
+		//Add components to ComboBox
+		sortBy.addItem("Lutfen Bir Siralama Olcutu Seciniz");
+		sortBy.addItem("Hastane ID'sine Gore Sirala");
+		sortBy.addItem("Hastane Ismine Gore Alfabetik Sirala ");
+		sortBy.addItem("Sehre Gore Alfabetik Sirala");
+		
 		// Add button actions
 		back.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {

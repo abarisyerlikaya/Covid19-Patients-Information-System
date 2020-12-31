@@ -122,6 +122,7 @@ public class CreatePatientWindow extends JFrame {
 		status.addItem("Test sonucu bekleniyor");
 		status.addItem("Evde karantinada");
 		status.addItem("Yurtta karantinada");
+		
 
 		// Add components to panel
 		contentPane.add(firstNameLabel);

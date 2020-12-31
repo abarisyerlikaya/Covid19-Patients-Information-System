@@ -7,12 +7,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DbConnection {
-	static String url = "jdbc:postgresql://localhost:5432/covid19-patients";
+	static String url = "jdbc:postgresql://localhost:5432/project";
 	static Connection conn;
 
 	static void connect() {
 		try {
-			conn = DriverManager.getConnection(url, "postgres", "0852");
+			conn = DriverManager.getConnection(url, "postgres", "123456456");
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

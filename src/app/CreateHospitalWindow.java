@@ -9,6 +9,8 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class CreateHospitalWindow extends JFrame {
@@ -39,6 +41,7 @@ public class CreateHospitalWindow extends JFrame {
 		nameLabel = new JLabel("Adi:");
 		title = new JLabel("YENI HASTANE");
 		submit = new JButton("Ekle");
+		
 		cityLabel.setBounds(10, 98, 194, 14);
 		city.setBounds(10, 123, 194, 22);
 		submit.setBounds(10, 156, 194, 23);
@@ -54,5 +57,37 @@ public class CreateHospitalWindow extends JFrame {
 		contentPane.add(name);
 		contentPane.add(nameLabel);
 		contentPane.add(submit);
+		
+		
+		String[] sehirler ={"Adana","Adiyaman", "Afyon", "Agri", "Amasya", "Ankara", "Antalya", "Artvin",
+	            "Aydin", "Balikesir","Bilecik", "Bingol", "Bitlis", "Bolu", "Burdur", "Bursa", "Canakkale",
+	            "Cankiri", "Corum","Denizli","Diyarbakir", "Edirne", "Elazig", "Erzincan", "Erzurum ", "Eskisehir",
+	            "Gaziantep", "Giresun","Gumushane", "Hakkari", "Hatay", "Isparta", "Mersin", "Istanbul", "Izmir",
+	            "Kars", "Kastamonu", "Kayseri","Kirklareli", "Kirsehir", "Kocaeli", "Konya", "Kutahya ", "Malatya",
+	            "Manisa", "Kahramanmaras", "Mardin", "Mugla", "Mus", "Nevsehir", "Nigde", "Ordu", "Rize", "Sakarya",
+	            "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdag", "Tokat", "Trabzon  ", "Tunceli", "Sanliurfa", "Usak",
+	            "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt ", "Karaman", "Kirikkale", "Batman", "Sirnak",
+	            "Bartin", "Ardahan", "Igdir", "Yalova", "Karabuk ", "Kilis", "Osmaniye ", "Duzce"};
+		
+		for(String cursor:sehirler) {
+			city.addItem(cursor);
+						
+		}
+		
+		submit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DbConnection.connect();
+				String query;
+				if(name.getText().length()>0) {
+				query = "insert into hospital values(nextval('hostid'),"+ "'"+name.getText()+"'" +","+"'"+sehirler[city.getSelectedIndex()]+"'"+")"; 
+				
+				DbConnection.update(query);
+				}
+				popup frame = new popup();
+				frame.setVisible(true);
+				DbConnection.disconnect();
+							
+			}
+		});
 	}
 }
