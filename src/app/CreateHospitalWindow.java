@@ -85,6 +85,7 @@ public class CreateHospitalWindow extends JFrame {
 				}
 				popup frame = new popup();
 				frame.setVisible(true);
+				setVisible(false);
 				DbConnection.disconnect();
 							
 			}

@@ -32,7 +32,7 @@ public class UpdateExaminationWindow extends JFrame {
 
 	public UpdateExaminationWindow(String defaultSsn, int defaultTckn, boolean defaultTestResult, String defaultHospital) {
 		this.defaultSsn = defaultSsn;
-		this.defaultTckn = defaultTckn;
+		this.defaultTckn = defaultTckn; 
 		this.defaultTestResult = defaultTestResult;
 		this.defaultHospital = defaultHospital;
 
@@ -50,13 +50,13 @@ public class UpdateExaminationWindow extends JFrame {
 
 		// Create components
 		testResultLabel = new JLabel("Test Sonucu:");
-		tcknLabel = new JLabel("Hastanýn TCKN'si:");
-		hospitalLabel = new JLabel("Yapýldýðý Hastane:");
+		tcknLabel = new JLabel("Hastanï¿½n TCKN'si:");
+		hospitalLabel = new JLabel("Yapï¿½ldï¿½ï¿½ï¿½ Hastane:");
 		tckn = new JTextField();
 		ssn = new JTextField();
 		hospital = new JComboBox<String>();
 		ssnLabel = new JLabel("Yapan Doktorun SGK No'su:");
-		title = new JLabel("YENÝ MUAYENE");
+		title = new JLabel("YENï¿½ MUAYENE");
 		submit = new JButton("Ekle");
 		testResult = new JComboBox<String>();
 

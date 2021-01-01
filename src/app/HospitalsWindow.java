@@ -18,6 +18,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.JScrollPane;
 
 @SuppressWarnings("serial")
 public class HospitalsWindow extends JFrame {
@@ -68,14 +69,15 @@ public class HospitalsWindow extends JFrame {
 		showResults = new JButton("Sonuclari Goster");
 		showResults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-		
+
 				try {
 					Showtable();
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				}
-				
+
 			}
+
 			public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
 
 				ResultSetMetaData metaData = rs.getMetaData();
@@ -101,71 +103,70 @@ public class HospitalsWindow extends JFrame {
 				return new DefaultTableModel(data, columnNames);
 
 			}
-			
-			
+
 			public void Showtable() throws SQLException {
 				DbConnection.connect();
-				
-				
-				
-				
-			
+
 				String query = "select id,name,city from hospital ";
-				
-				if(maxExaminationCount.getText().length()>0) {
+
+				if (maxExaminationCount.getText().length() > 0) {
 					int maxexamination = Integer.parseInt(maxExaminationCount.getText());
-					String query1 ="select h.id, h.name, h.city from examination e, hospital h where e.hospital_id = h.id group by h.id,h.name,h.city ";
-					
-					String addition = " having count(*) < "+maxexamination;
-					
-					
-					query = query + " intersect "+ query1;
+					String query1 = "select h.id, h.name, h.city from examination e, hospital h where e.hospital_id = h.id group by h.id,h.name,h.city ";
+
+					String addition = " having count(*) < " + maxexamination;
+					query1 += addition;
+
+					query = query + " intersect " + query1;
 				}
-				if(minExaminationCount.getText().length()>0) {
+				if (minExaminationCount.getText().length() > 0) {
 					int minexamination = Integer.parseInt(minExaminationCount.getText());
-					String query1 = "select h.id, h.name, h.city " + 
-							"from examination e, hospital h " + 
-							"where e.hospital_id = h.id " + 
-							"group by h.id, h.name, h.city, e.hospital_id ";
-					String addition = "having count(*) > "+minexamination;
-					
-					
-					query = query +" intersect "+query1;
-					
+					String query1 = "select h.id, h.name, h.city " + "from examination e, hospital h "
+							+ "where e.hospital_id = h.id " + "group by h.id, h.name, h.city, e.hospital_id ";
+					String addition = "having count(*) > " + minexamination;
+					query1 += addition;
+
+					query = query + " intersect " + query1;
+
 				}
-				if(minPositiveTestCount.getText().length()>0) {
+				if (minPositiveTestCount.getText().length() > 0) {
 					int minpositive = Integer.parseInt(minPositiveTestCount.getText());
-					String query1 = "select h.id, h.name, h.city  " + 
-							"from examination e, hospital h " + 
-							"where e.hospital_id = h.id and e.test_result = true " + 
-							"group by h.id, h.name, h.city, e.hospital_id having count(*) > "+minpositive;
-					
-					query = query + "intersect "+ query1;
-					
+					String query1 = "select h.id, h.name, h.city  " + "from examination e, hospital h "
+							+ "where e.hospital_id = h.id and e.test_result = true "
+							+ "group by h.id, h.name, h.city, e.hospital_id having count(*) > " + minpositive;
+
+					query = query + "intersect " + query1;
+
 				}
-				if(maxPositiveTestCount.getText().length()>0) {
+				if (maxPositiveTestCount.getText().length() > 0) {
 					int maxpositive = Integer.parseInt(maxPositiveTestCount.getText());
-					String query1 = "select h.id, h.name, h.city  " + 
-							"from examination e, hospital h " + 
-							"where e.hospital_id = h.id and e.test_result = true " + 
-							"group by h.id, h.name, h.city, e.hospital_id having count(*) < "+maxpositive+" "  ;
-					
-					query = query + "intersect "+ query1;
-					
+					String query1 = "select h.id, h.name, h.city  " + "from examination e, hospital h "
+							+ "where e.hospital_id = h.id and e.test_result = true "
+							+ "group by h.id, h.name, h.city, e.hospital_id having count(*) < " + maxpositive + " ";
+					query = query + "intersect " + query1;
 				}
-				
-				switch(sortBy.getSelectedIndex()) {
-				case 1: 
-					query+= " order by id";
+
+				if ((minExaminationCount.getText().length() > 0
+						&& Integer.parseInt(minExaminationCount.getText()) == 0)) {
+					query += " UNION SELECT h.* FROM hospital h WHERE h.id NOT IN (SELECT hospital_id FROM examination)";
+				}
+
+				if ((minPositiveTestCount.getText().length() > 0
+						&& Integer.parseInt(minPositiveTestCount.getText()) == 0)) {
+					query += " UNION SELECT h.* FROM hospital h WHERE h.id NOT IN (SELECT hospital_id FROM examination WHERE test_result = true)";
+				}
+
+				switch (sortBy.getSelectedIndex()) {
+				case 1:
+					query += " order by id";
 					break;
 				case 2:
-					query+= " order by name";
+					query += " order by name";
 					break;
 				case 3:
-					query+= " order by city";
+					query += " order by city";
 					break;
 				}
-				
+
 				ResultSet rs = DbConnection.select(query);
 				table.setModel(buildTableModel(rs));
 				DbConnection.disconnect();
@@ -174,6 +175,7 @@ public class HospitalsWindow extends JFrame {
 		sortBy = new JComboBox<String>();
 		table = new JTable();
 		createHospital = new JButton("Hastane ekle");
+		JScrollPane scrollPane = new JScrollPane(table);
 
 		// Configure components
 		title.setFont(new Font("Calibri", Font.BOLD, 16));
@@ -194,7 +196,7 @@ public class HospitalsWindow extends JFrame {
 		dash3.setBounds(564, 76, 4, 14);
 		showResults.setBounds(372, 116, 350, 26);
 		sortBy.setBounds(10, 116, 350, 26);
-		table.setBounds(10, 167, 712, 267);
+		scrollPane.setBounds(10, 167, 712, 267);
 		createHospital.setBounds(10, 445, 712, 26);
 
 		// Add components to panel
@@ -210,15 +212,15 @@ public class HospitalsWindow extends JFrame {
 		contentPane.add(dash3);
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
-		contentPane.add(table);
+		contentPane.add(scrollPane);
 		contentPane.add(createHospital);
-		
-		//Add components to ComboBox
+
+		// Add components to ComboBox
 		sortBy.addItem("Lutfen Bir Siralama Olcutu Seciniz");
 		sortBy.addItem("Hastane ID'sine Gore Sirala");
 		sortBy.addItem("Hastane Ismine Gore Alfabetik Sirala ");
 		sortBy.addItem("Sehre Gore Alfabetik Sirala");
-		
+
 		// Add button actions
 		back.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -226,7 +228,7 @@ public class HospitalsWindow extends JFrame {
 				app.getFrame().setVisible(true);
 			}
 		});
-		
+
 		createHospital.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CreateHospitalWindow frame = new CreateHospitalWindow();
