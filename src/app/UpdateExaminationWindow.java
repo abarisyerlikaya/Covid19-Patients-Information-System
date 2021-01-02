@@ -6,9 +6,14 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class UpdateExaminationWindow extends JFrame {
@@ -24,18 +29,18 @@ public class UpdateExaminationWindow extends JFrame {
 	private JComboBox<String> hospital;
 	private JButton submit;
 	private JComboBox<String> testResult;
-
 	private String defaultSsn;
-	private int defaultTckn;
-	private boolean defaultTestResult;
+	private String defaultTckn;
+	private String defaultTestResult;
 	private String defaultHospital;
+	private String defaultId;
 
-	public UpdateExaminationWindow(String defaultSsn, int defaultTckn, boolean defaultTestResult, String defaultHospital) {
+	public UpdateExaminationWindow(String defaultTckn,String defaultId,String defaultSsn, String defaultTestResult, String defaultHospital) {
 		this.defaultSsn = defaultSsn;
-		this.defaultTckn = defaultTckn; 
+		this.defaultTckn = defaultTckn;
 		this.defaultTestResult = defaultTestResult;
 		this.defaultHospital = defaultHospital;
-
+		this.defaultId=defaultId;
 		initialize();
 	}
 
@@ -50,14 +55,25 @@ public class UpdateExaminationWindow extends JFrame {
 
 		// Create components
 		testResultLabel = new JLabel("Test Sonucu:");
-		tcknLabel = new JLabel("Hastanï¿½n TCKN'si:");
-		hospitalLabel = new JLabel("Yapï¿½ldï¿½ï¿½ï¿½ Hastane:");
-		tckn = new JTextField();
-		ssn = new JTextField();
+		tcknLabel = new JLabel("Hastanýn TCKN'si:");
+		hospitalLabel = new JLabel("Yapýldýðý Hastane:");
+		tckn = new JTextField(defaultTckn);
+		tckn.setEditable(false);
+		ssn = new JTextField(defaultSsn);
+		ssn.setEditable(false);
 		hospital = new JComboBox<String>();
+		hospital.setEnabled(false);
+		
 		ssnLabel = new JLabel("Yapan Doktorun SGK No'su:");
-		title = new JLabel("YENï¿½ MUAYENE");
-		submit = new JButton("Ekle");
+		title = new JLabel("MUAYENE BILGILERI");
+		submit = new JButton("Guncelle");
+		submit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updateExamination();
+				popup hey=new popup();
+				hey.setVisible(true);
+			}
+		});
 		testResult = new JComboBox<String>();
 
 		// Configure components
@@ -87,5 +103,43 @@ public class UpdateExaminationWindow extends JFrame {
 		contentPane.add(tckn);
 		contentPane.add(submit);
 		contentPane.add(testResult);
+		testResult.addItem("Bekliyor");
+		testResult.addItem("Negatif");
+		testResult.addItem("Pozitif");
+		DbConnection.connect();
+		ResultSet rs = DbConnection.select("SELECT name FROM hospital");
+		try {
+			while (rs.next())
+				hospital.addItem(rs.getString("name"));
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		hospital.setSelectedItem(defaultHospital);
+		DbConnection.disconnect();
+		testResult.setSelectedItem(defaultTestResult);
 	}
+	public void updateExamination() {
+		String pt_tckn = tckn.getText();
+		String doc_ssn = ssn.getText();
+		int test_result_new=testResult.getSelectedIndex();
+		String hospital_name = (String) hospital.getSelectedItem();
+		
+		String test_result="null";
+		if(test_result_new==1) {
+			test_result="false";
+		}
+		else if(test_result_new==2) {
+			test_result="true";
+		}
+		
+		DbConnection.connect();
+
+		DbConnection.update("UPDATE examination SET test_result = "+ test_result +" WHERE exam_id = " + defaultId );
+
+		DbConnection.disconnect();
+
+		setVisible(false);
+	}
+
 }

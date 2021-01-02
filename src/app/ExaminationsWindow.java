@@ -3,11 +3,18 @@ package app;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Vector;
+
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -39,7 +46,7 @@ public class ExaminationsWindow extends JFrame {
 	private JTextField examinationMonth;
 	private JLabel filterByTestResult;
 	private JLabel filterByDoctorName;
-	private JTextField status;
+	private JComboBox<String> status;
 	private JLabel filterByStatus;
 	private JTextField hospital;
 	private JLabel filterByHospital;
@@ -84,6 +91,17 @@ public class ExaminationsWindow extends JFrame {
 		filterByTckn = new JLabel("Hastanin TCKN'sine gore filtrele:");
 		tckn = new JTextField();
 		showResults = new JButton("Sonuclari Goster");
+		showResults.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					printTable();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+			}
+		});
 		sortBy = new JComboBox<String>();
 		table = new JTable();
 		minAge = new JTextField();
@@ -91,9 +109,33 @@ public class ExaminationsWindow extends JFrame {
 		filterByAge = new JLabel("Hastanin yasina gore filtrele:");
 		filterByBloodType = new JLabel("Hastanin kan grubuna gore filtrele:");
 		deleteExamination = new JButton("Muayeneyi sil");
+		deleteExamination.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				deletePatient((BigDecimal) table.getModel().getValueAt(table.getSelectedRow(), 0));
+			}
+		});
 		createExamination = new JButton("Muayene ekle");
 		maxAge = new JTextField();
 		updateExamination = new JButton("Muayene bilgilerini guncelle");
+		updateExamination.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String patient_tckn = (String) table.getModel().getValueAt(table.getSelectedRow(), 0).toString();
+				String exam_id = (String) table.getModel().getValueAt(table.getSelectedRow(), 1).toString();
+				String test_date = (String) table.getModel().getValueAt(table.getSelectedRow(), 2).toString();
+				String doc_ssn = (String) table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
+				String test_result="";
+				String hospital_id = (String) table.getModel().getValueAt(table.getSelectedRow(), 5).toString();
+				if((table.getModel().getValueAt(table.getSelectedRow(), 4))==null) {
+					test_result ="";
+				}
+				else {
+					test_result =(String) table.getModel().getValueAt(table.getSelectedRow(), 4).toString();
+				}
+
+				UpdateExaminationWindow frame = new UpdateExaminationWindow( patient_tckn,exam_id,doc_ssn, test_result, hospital_id);
+				frame.setVisible(true);
+			}
+		});
 		filterByCronicalIllnes = new JLabel("Hastanin kronik hastaliga gore filtrele:");
 		filterByExaminationDate = new JLabel("Muayene tarihine gore filtrele");
 		examinationMonth = new JTextField();
@@ -102,7 +144,7 @@ public class ExaminationsWindow extends JFrame {
 		filterByTestResult = new JLabel("Test sonucuna gore filtrele:");
 		filterByDoctorName = new JLabel("Doktor adina gore filtrele:");
 		filterByStatus = new JLabel("Hastanin durumuna gore filtrele:");
-		status = new JTextField();
+		status = new JComboBox();
 		hospital = new JTextField();
 		filterByHospital = new JLabel("Hastaneye gore filtrele:");
 		slash1 = new JLabel("/");
@@ -115,7 +157,10 @@ public class ExaminationsWindow extends JFrame {
 		testResult = new JComboBox<String>();
 		doctorLastName = new JTextField();
 		doctorFirstName = new JTextField();
-
+		status.addItem("Tumu");
+		status.addItem("Test sonucu bekleniyor");
+		status.addItem("Evde karantinada");
+		status.addItem("Yurtta karantinada");
 		// Configure components
 		title.setFont(new Font("Calibri", Font.BOLD, 16));
 		title.setHorizontalAlignment(SwingConstants.CENTER);
@@ -146,8 +191,8 @@ public class ExaminationsWindow extends JFrame {
 		examinationMonth.setBounds(52, 197, 20, 20);
 		filterByTestResult.setBounds(266, 166, 212, 20);
 		filterByDoctorName.setBounds(522, 166, 200, 20);
-		status.setColumns(10);
-		status.setBounds(10, 259, 88, 20);
+		
+		status.setBounds(10, 259, 109, 20);
 		filterByStatus.setBounds(10, 228, 200, 20);
 		hospital.setColumns(10);
 		hospital.setBounds(266, 259, 109, 20);
@@ -173,7 +218,28 @@ public class ExaminationsWindow extends JFrame {
 		dash1.setBounds(52, 138, 4, 14);
 		maxAge.setColumns(10);
 		maxAge.setBounds(66, 135, 32, 20);
+		sortBy.addItem("Hasta TCKN'ye gore sirala");
+		sortBy.addItem("Test tarihine gore sirala");
+		sortBy.addItem("Doktor SSN'e g�re sirala");
+		sortBy.addItem("Test sonucuna gore sirala");
+		sortBy.addItem("Hospital ID'ye gore sirala");
 
+		gender.addItem("Tumu");
+		gender.addItem("Erkek");
+		gender.addItem("Kadin");
+		gender.addItem("Diger");
+		testResult.addItem("Tumu");
+		testResult.addItem("Negatif");
+		testResult.addItem("Pozitif");
+		bloodType.addItem("Tumu");
+		bloodType.addItem("0-");
+		bloodType.addItem("0+");
+		bloodType.addItem("A-");
+		bloodType.addItem("A+");
+		bloodType.addItem("B-");
+		bloodType.addItem("B+");
+		bloodType.addItem("AB-");
+		bloodType.addItem("AB+");
 		// Add components to panel
 		contentPane.add(title);
 		contentPane.add(back);
@@ -219,6 +285,7 @@ public class ExaminationsWindow extends JFrame {
 		// Add button actions
 		back.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				
 				setVisible(false);
 				app.getFrame().setVisible(true);
 			}
@@ -230,5 +297,152 @@ public class ExaminationsWindow extends JFrame {
 				frame.setVisible(true);
 			}
 		});
+	}
+	public void printTable() throws SQLException {
+		DbConnection.connect();
+
+		String query = generateQuery();
+		ResultSet rs = DbConnection.select(query);
+		table.setModel(buildTableModel(rs));
+
+		DbConnection.disconnect();
+
+	}
+	public String generateQuery() {
+		String query = "SELECT * FROM examination";
+		// isim
+		if (firstName.getText().length() > 0) {
+			
+			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.first_name = '" + firstName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// soyisim
+		if (lastName.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.last_name = '" + lastName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// tckn
+		if (tckn.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn = '" +tckn.getText()+ "' AND e.patient_tckn=pt.tckn";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// cinsiyet
+		if (gender.getSelectedIndex() == 1) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='M'";
+			query = query + " INTERSECT " + newQuery;
+		} else if (gender.getSelectedIndex() == 2) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='F'";
+			query = query + " INTERSECT " + newQuery;
+		} else if (gender.getSelectedIndex() == 3) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex!='F' and p.sex!='M'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// kan grubu
+		if (bloodType.getSelectedIndex() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.blood_type='" + (String) bloodType.getSelectedItem() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// kronik hastalık
+		if (cronicalIllnes.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.cronic_illnesses ='" + cronicalIllnes.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Test sonucu
+		if (testResult.getSelectedIndex() == 1) {
+			String newQuery = "SELECT * FROM examination WHERE test_result = false";
+			query = query + " INTERSECT " + newQuery;
+		} else if (testResult.getSelectedIndex() == 2) {
+			String newQuery = "SELECT * FROM examination where test_result=true";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Doktor ismi
+		if (doctorFirstName.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.first_name='"
+					+ doctorFirstName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Doktor soyismi
+		if (doctorLastName.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.last_name='"
+					+ doctorLastName.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Durum
+		if (status.getSelectedIndex() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.status = '" + (String) status.getSelectedItem() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// hastane
+		if (hospital.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,hospital h WHERE e.hospital_id=h.id and h.name='"
+					+ hospital.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// şehir
+		if (city.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,hospital h WHERE e.hospital_id=h.id and h.city='"
+					+ city.getText() + "'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Tarih BUNA BAKIN
+		if (examinationDay.getText().length() > 0 && examinationMonth.getText().length() > 0
+				&& examinationYear.getText().length() > 0) {
+			String newQuery = "SELECT * FROM examination WHERE test_date='"
+					+ examinationYear.getText() + "-" + examinationMonth.getText() + "-" + examinationDay.getText() +"'";
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Yaş BUNA BAKIN
+		if (minAge.getText().length() > 0 && maxAge.getText().length() > 0) {
+			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and " + minAge.getText()
+					+ "<=(now()::date-birth_date)/365 AND (now()::date-birth_date)/365<=" + maxAge.getText();
+			query = query + " INTERSECT " + newQuery;
+		}
+		// Sirala
+		if (sortBy.getSelectedIndex() == 0)
+			query += " ORDER BY patient_tckn";
+		else if (sortBy.getSelectedIndex() == 1)
+			query += " ORDER BY test_date";
+		else if (sortBy.getSelectedIndex() == 2)
+			query += " ORDER BY doc_ssn";
+		else if (sortBy.getSelectedIndex() == 3)
+			query += " ORDER BY test_result";
+		else if (sortBy.getSelectedIndex() == 4)
+			query += " ORDER BY hospital_id";
+
+		return query;
+	}
+	public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
+
+		ResultSetMetaData metaData = rs.getMetaData();
+
+		// names of columns
+		Vector<String> columnNames = new Vector<String>();
+		int columnCount = metaData.getColumnCount();
+		
+		columnNames.add("Hasta TCKN");
+		columnNames.add("ID");
+		columnNames.add("Test Tarihi");
+		columnNames.add("Doktor SSN");
+		columnNames.add("Test Sonucu");
+		columnNames.add("Hospial ID");
+
+
+		// data of the table
+		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
+		while (rs.next()) {
+			Vector<Object> vector = new Vector<Object>();
+			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+				vector.add(rs.getObject(columnIndex));
+			}
+			data.add(vector);
+		}
+
+		return new DefaultTableModel(data, columnNames);
+
+	}
+	public void deletePatient(BigDecimal tckn) {
+		DbConnection.connect();
+		DbConnection.update("DELETE FROM examination WHERE patient_tckn = '" + tckn.toString() + "'");
+		DbConnection.disconnect();
 	}
 }
