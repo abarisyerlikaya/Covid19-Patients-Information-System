@@ -55,10 +55,7 @@ public class popup extends JFrame {
 		JButton close = new JButton("New button");
 		close.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-				hospital.setVisible(false);
-				
-				
+				setVisible(false);	
 			}
 		});
 		contentPane.add(close, BorderLayout.SOUTH);

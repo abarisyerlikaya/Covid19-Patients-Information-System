@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -73,7 +74,7 @@ public class HospitalsWindow extends JFrame {
 				try {
 					Showtable();
 				} catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 
 			}
@@ -111,14 +112,14 @@ public class HospitalsWindow extends JFrame {
 
 				if (maxExaminationCount.getText().length() > 0) {
 					int maxexamination = Integer.parseInt(maxExaminationCount.getText());
-					String query1 = "select h.id, h.name, h.city from examination e, hospital h where e.hospital_id = h.id group by h.id,h.name,h.city ";
+					String query1 = "select h.id, h.name, h.city from hospital h EXCEPT select h.id, h.name, h.city from examination e, hospital h where e.hospital_id = h.id group by h.id,h.name,h.city ";
 
-					String addition = " having count(*) < " + maxexamination;
+					String addition = " having count(*) > " + maxexamination;
 					query1 += addition;
 
 					query = query + " intersect " + query1;
 				}
-				if (minExaminationCount.getText().length() > 0) {
+				if (minExaminationCount.getText().length() > 0 && !minExaminationCount.getText().equals("0")) {
 					int minexamination = Integer.parseInt(minExaminationCount.getText());
 					String query1 = "select h.id, h.name, h.city " + "from examination e, hospital h "
 							+ "where e.hospital_id = h.id " + "group by h.id, h.name, h.city, e.hospital_id ";
@@ -128,7 +129,7 @@ public class HospitalsWindow extends JFrame {
 					query = query + " intersect " + query1;
 
 				}
-				if (minPositiveTestCount.getText().length() > 0) {
+				if (minPositiveTestCount.getText().length() > 0 && !minPositiveTestCount.getText().equals("0")) {
 					int minpositive = Integer.parseInt(minPositiveTestCount.getText());
 					String query1 = "select h.id, h.name, h.city  " + "from examination e, hospital h "
 							+ "where e.hospital_id = h.id and e.test_result = true "
@@ -139,30 +140,21 @@ public class HospitalsWindow extends JFrame {
 				}
 				if (maxPositiveTestCount.getText().length() > 0) {
 					int maxpositive = Integer.parseInt(maxPositiveTestCount.getText());
-					String query1 = "select h.id, h.name, h.city  " + "from examination e, hospital h "
+					String query1 = "select h.id, h.name, h.city  "
+							+ "from hospital h EXCEPT select h.id, h.name, h.city FROM hospital h, examination e"
 							+ "where e.hospital_id = h.id and e.test_result = true "
-							+ "group by h.id, h.name, h.city, e.hospital_id having count(*) < " + maxpositive + " ";
+							+ "group by h.id, h.name, h.city, e.hospital_id having count(*) > " + maxpositive + " ";
 					query = query + "intersect " + query1;
 				}
 
-				if ((minExaminationCount.getText().length() > 0
-						&& Integer.parseInt(minExaminationCount.getText()) == 0)) {
-					query += " UNION SELECT h.* FROM hospital h WHERE h.id NOT IN (SELECT hospital_id FROM examination)";
-				}
-
-				if ((minPositiveTestCount.getText().length() > 0
-						&& Integer.parseInt(minPositiveTestCount.getText()) == 0)) {
-					query += " UNION SELECT h.* FROM hospital h WHERE h.id NOT IN (SELECT hospital_id FROM examination WHERE test_result = true)";
-				}
-
 				switch (sortBy.getSelectedIndex()) {
-				case 1:
+				case 0:
 					query += " order by id";
 					break;
-				case 2:
+				case 1:
 					query += " order by name";
 					break;
-				case 3:
+				case 2:
 					query += " order by city";
 					break;
 				}
@@ -216,7 +208,6 @@ public class HospitalsWindow extends JFrame {
 		contentPane.add(createHospital);
 
 		// Add components to ComboBox
-		sortBy.addItem("Lutfen Bir Siralama Olcutu Seciniz");
 		sortBy.addItem("Hastane ID'sine Gore Sirala");
 		sortBy.addItem("Hastane Ismine Gore Alfabetik Sirala ");
 		sortBy.addItem("Sehre Gore Alfabetik Sirala");

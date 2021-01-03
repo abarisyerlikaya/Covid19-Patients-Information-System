@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -65,25 +66,14 @@ public class CitiesWindow extends JFrame {
 		maxPositiveTestCount = new JTextField();
 		dash3 = new JLabel("-");
 		showResults = new JButton("Sonuclari Goster");
-		
-		
-		
-		
-		
-		
-		
+
 		showResults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
-				
+
 				Showresults();
-				
+
 			}
-			
-			
-			
-			
-			
+
 			public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
 
 				ResultSetMetaData metaData = rs.getMetaData();
@@ -93,7 +83,6 @@ public class CitiesWindow extends JFrame {
 				int columnCount = metaData.getColumnCount();
 
 				columnNames.add("Sehir");
-				
 
 				// data of the table
 				Vector<Vector<Object>> data = new Vector<Vector<Object>>();
@@ -108,50 +97,55 @@ public class CitiesWindow extends JFrame {
 				return new DefaultTableModel(data, columnNames);
 
 			}
-			
-			
+
 			public void Showresults() {
 				DbConnection.connect();
 				String query;
-				query = "select h.city from hospital h,examination e where h.id= e.hospital_id group by h.city ";
-				if(maxExaminationCount.getText().length()>0) {
+				query = "select * from sehirler ";
+
+				if (maxExaminationCount.getText().length() > 0) {
 					int maxexam = Integer.parseInt(maxExaminationCount.getText());
-					String add = "Select h.city from hospital h, examination e where h.id=e.hospital_id  group by h.city having count(*) <"+maxexam;
-					query+= "intersect "+add;
+					String add = "Select h.city from hospital h EXCEPT select h.city from hospital h, examination e where h.id=e.hospital_id  group by h.city having count(*) >"
+							+ maxexam;
+					query += "intersect " + add;
 				}
-				if(minExaminationCount.getText().length()>0) {
+				if (minExaminationCount.getText().length() > 0 && !minExaminationCount.getText().equals("0")) {
 					int minexam = Integer.parseInt(minExaminationCount.getText());
-					String add = "select h.city from hospital h, examination e  where h.id=e.hospital_id group by h.city having count(*) > "+minexam;
-					query+= " intersect "+add;
+					String add = "select h.city from hospital h, examination e  where h.id=e.hospital_id group by h.city having count(*) > "
+							+ minexam;
+					query += " intersect " + add;
 				}
-				if(minPositiveTestCount.getText().length()>0) {
+				if (minPositiveTestCount.getText().length() > 0 && !minPositiveTestCount.getText().equals("0")) {
 					int minpositive = Integer.parseInt(minPositiveTestCount.getText());
-					String add = "select h.city from hospital h,examination e where h.id = e.hospital_id and e.test_result= true group by h.city having count(*)>"+minpositive;
-					query+= " intersect "+add;
+					String add = "select h.city from hospital h,examination e where h.id = e.hospital_id and e.test_result= true group by h.city having count(*)>"
+							+ minpositive;
+					query += " intersect " + add;
 				}
-				if(maxPositiveTestCount.getText().length()>0) {
+				if (maxPositiveTestCount.getText().length() > 0) {
 					int maxpositive = Integer.parseInt(maxPositiveTestCount.getText());
-					String add = "select h.city from hospital h, examination e where h.id = e.hospital_id and e.test_result = true group by h.city having count(*)<"+maxpositive;
-					query+= " intersect "+add;
+					String add = "select h.city from hospital h EXCEPT select h.city from hospital h, examination e where h.id = e.hospital_id and e.test_result = true group by h.city having count(*)>"
+							+ maxpositive;
+					query += " intersect " + add;
 				}
-				
-				if(sortBy.getSelectedIndex()==1) {
+
+				if (sortBy.getSelectedIndex() == 1) {
 					String add = "select h.city from hospital h, examination e where h.id=e.hospital_id and e.test_result != true group by h.city ";
-				
-					query+= " intersect "+add;
+
+					query += " intersect " + add;
 				}
-				System.out.println(query);
+
+				query += " order by city";
+
 				ResultSet rs = DbConnection.select(query);
 				try {
 					table.setModel(buildTableModel(rs));
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 				DbConnection.disconnect();
-				
+
 			}
-			
+
 		});
 		sortBy = new JComboBox<String>();
 
@@ -191,8 +185,8 @@ public class CitiesWindow extends JFrame {
 
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
-		
-		//Add components to ComboBox
+
+		// Add components to ComboBox
 		sortBy.addItem("Lutfen Bir Siralama Olcutu Seciniz");
 		sortBy.addItem("Hic Vaka Olmayan Sehirler");
 

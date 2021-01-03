@@ -3,6 +3,8 @@ package app;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
@@ -46,8 +48,8 @@ public class AppWindow {
 		frame.setResizable(false);
 
 		// Create components
-		title = new JLabel("COVID-19 HASTALARI B�LG� S�STEM�");
-		cities = new JButton("�ehir Bilgileri");
+		title = new JLabel("COVID-19 HASTALARI B�LG� S�STEM�");
+		cities = new JButton("�ehir Bilgileri");
 		hospitals = new JButton("Hastane Bilgileri");
 		doctors = new JButton("Doktor Bilgileri");
 		patients = new JButton("Hasta Bilgileri");
@@ -78,7 +80,7 @@ public class AppWindow {
 					getFrame().setVisible(false);
 					citiesWindow.setVisible(true);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -89,7 +91,7 @@ public class AppWindow {
 					getFrame().setVisible(false);
 					hospitalsWindow.setVisible(true);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -100,7 +102,7 @@ public class AppWindow {
 					getFrame().setVisible(false);
 					doctorsWindow.setVisible(true);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -111,7 +113,7 @@ public class AppWindow {
 					getFrame().setVisible(false);
 					patientsWindow.setVisible(true);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -122,7 +124,7 @@ public class AppWindow {
 					getFrame().setVisible(false);
 					examinationsWindow.setVisible(true);
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});

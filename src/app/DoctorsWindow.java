@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -168,7 +169,7 @@ public class DoctorsWindow extends JFrame {
 					CreateDoctorWindow frame = new CreateDoctorWindow();
 					frame.setVisible(true);
 				} catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -178,7 +179,7 @@ public class DoctorsWindow extends JFrame {
 				try {
 					showResults();
 				} catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -189,13 +190,13 @@ public class DoctorsWindow extends JFrame {
 				String first_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 1);
 				String last_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 2);
 				String hospital_name = (String) table.getModel().getValueAt(table.getSelectedRow(), 3);
-				
+
 				try {
 					UpdateDoctorWindow frame = new UpdateDoctorWindow(ssn_pkey, first_name, last_name, hospital_name);
 					frame.setVisible(true);
 				} catch (SQLException e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -305,25 +306,15 @@ public class DoctorsWindow extends JFrame {
 		columnNames.add("SGK Numarasi");
 		columnNames.add("Adi");
 		columnNames.add("Soyadi");
-		columnNames.add("Hastane");
+		columnNames.add("Hastane ID");
 
 		// data of the table
 		DbConnection.connect();
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
 		while (rs.next()) {
 			Vector<Object> vector = new Vector<Object>();
-			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-				// If column is hospital id, set hospital name instead of id
-				if (columnIndex == 4) {
-
-					ResultSet hospital = DbConnection
-							.select("SELECT * FROM hospital WHERE id = " + rs.getString(columnIndex));
-					hospital.next();
-					vector.add(hospital.getString("name"));
-
-				} else
-					vector.add(rs.getObject(columnIndex));
-			}
+			for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++)
+				vector.add(rs.getObject(columnIndex));
 			data.add(vector);
 		}
 		DbConnection.disconnect();

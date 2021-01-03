@@ -4,6 +4,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.sql.ResultSet;
@@ -57,13 +58,12 @@ public class CreateExaminationWindow extends JFrame {
 				try {
 					hospital.addItem(rs.getString("name"));
 				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 		}
 		DbConnection.disconnect();
 		ssnLabel = new JLabel("Yapan Doktorun SGK No'su:");
@@ -75,9 +75,9 @@ public class CreateExaminationWindow extends JFrame {
 			}
 		});
 		testResult = new JComboBox<String>();
-		testResult.addItem("Bekleniyor");
-		testResult.addItem("Negatif");
-		testResult.addItem("Pozitif");
+		testResult.addItem("Waiting Tests");
+		testResult.addItem("Negative");
+		testResult.addItem("Positive - Quarantined");
 		// Configure components
 		tcknLabel.setBounds(10, 98, 194, 14);
 		testResultLabel.setBounds(10, 154, 194, 14);

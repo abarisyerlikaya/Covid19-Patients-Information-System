@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -147,7 +148,7 @@ public class PatientsWindow extends JFrame {
 		sortBy.addItem("Ada gore sirala");
 		sortBy.addItem("Soyada gore sirala");
 		sortBy.addItem("Cinsiyete gore sirala");
-		sortBy.addItem("Dogum tarihine gore sirala");
+		sortBy.addItem("Yasa gore sirala");
 		sortBy.addItem("Kan grubuna gore sirala");
 		sortBy.addItem("Kronik hastaliga gore sirala");
 		sortBy.addItem("Durumuna gore sirala");
@@ -276,7 +277,7 @@ public class PatientsWindow extends JFrame {
 				try {
 					showResults();
 				} catch (SQLException e1) {
-					e1.printStackTrace();
+					JOptionPane.showMessageDialog(null, "İşlem başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
@@ -316,92 +317,103 @@ public class PatientsWindow extends JFrame {
 	}
 
 	public String generateQueryFromFields() {
-		String query = "SELECT * FROM patient";
+		String query = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p";
 		// isim
 		if (firstName.getText().length() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE first_name = '" + firstName.getText() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE first_name = '"
+					+ firstName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// soyisim
 		if (lastName.getText().length() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE last_name = '" + lastName.getText() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE last_name = '"
+					+ lastName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// tckn
 		if (tckn.getText().length() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE tckn='" + tckn.getText() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE tckn='"
+					+ tckn.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// cinsiyet
 		if (gender.getSelectedIndex() == 1) {
-			String newQuery = "SELECT * FROM patient WHERE sex='M'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE sex='M'";
 			query = query + " INTERSECT " + newQuery;
 		} else if (gender.getSelectedIndex() == 2) {
-			String newQuery = "SELECT * FROM patient WHERE sex='F'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE sex='F'";
 			query = query + " INTERSECT " + newQuery;
 		} else if (gender.getSelectedIndex() == 3) {
-			String newQuery = "SELECT * FROM patient WHERE sex!='F' and sex!='M'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE sex!='F' and sex!='M'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// kan grubu
 		if (bloodType.getSelectedIndex() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE blood_type='" + (String) bloodType.getSelectedItem() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE blood_type='"
+					+ (String) bloodType.getSelectedItem() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// kronik hastalık
 		if (cronicalIllnes.getText().length() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE cronic_illnesses='" + cronicalIllnes.getText() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p WHERE cronic_illnesses='"
+					+ cronicalIllnes.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Test sonucu
 		if (testResult.getSelectedIndex() == 1) {
-			String newQuery = "SELECT patient.* FROM patient,examination WHERE tckn=patient_tckn and test_result=false";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination WHERE tckn=patient_tckn and test_result=false";
 			query = query + " INTERSECT " + newQuery;
 		} else if (testResult.getSelectedIndex() == 2) {
-			String newQuery = "SELECT patient.* FROM patient,examination WHERE tckn=patient_tckn and test_result=true";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination WHERE tckn=patient_tckn and test_result=true";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Doktor ismi
 		if (doctorFirstName.getText().length() > 0) {
-			String newQuery = "SELECT ptnt.* FROM patient ptnt,examination e,doctor d WHERE ptnt.tckn=e.patient_tckn and e.doc_ssn=d.ssn and d.first_name='"
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination e,doctor d WHERE p.tckn=e.patient_tckn and e.doc_ssn=d.ssn and d.first_name='"
 					+ doctorFirstName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Doktor soyismi
 		if (doctorLastName.getText().length() > 0) {
-			String newQuery = "SELECT ptnt.* FROM patient ptnt,examination e,doctor d WHERE ptnt.tckn=e.patient_tckn and e.doc_ssn=d.ssn and d.last_name='"
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination e,doctor d WHERE p.tckn=e.patient_tckn and e.doc_ssn=d.ssn and d.last_name='"
 					+ doctorLastName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Durum
 		if (status.getSelectedIndex() > 0) {
-			String newQuery = "SELECT * from patient WHERE status='" + (String) status.getSelectedItem() + "'";
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status from patient p WHERE status='"
+					+ (String) status.getSelectedItem() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// hastane
 		if (hospital.getText().length() > 0) {
-			String newQuery = "SELECT pt.* FROM patient pt,examination e,hospital h WHERE pt.tckn=e.patient_tckn and e.hospital_id=h.id and h.name='"
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination e,hospital h WHERE p.tckn=e.patient_tckn and e.hospital_id=h.id and h.name='"
 					+ hospital.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// şehir
 		if (city.getText().length() > 0) {
-			String newQuery = "SELECT pt.* FROM patient pt,examination e,hospital h WHERE pt.tckn=e.patient_tckn and e.hospital_id=h.id and h.city='"
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination e,hospital h WHERE p.tckn=e.patient_tckn and e.hospital_id=h.id and h.city='"
 					+ city.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Tarih
 		if (examinationDay.getText().length() > 0 && examinationMonth.getText().length() > 0
 				&& examinationYear.getText().length() > 0) {
-			String newQuery = "SELECT patient.* FROM patient,examination WHERE tckn=patient_tckn and test_date='"
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p,examination WHERE tckn=patient_tckn and test_date='"
 					+ examinationYear.getText() + "-" + examinationMonth.getText() + "-" + examinationDay.getText()
 					+ "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Yaş
-		if (minAge.getText().length() > 0 && maxAge.getText().length() > 0) {
-			String newQuery = "SELECT * FROM patient WHERE " + minAge.getText()
-					+ "<=(now()::date-birth_date)/365 AND (now()::date-birth_date)/365<=" + maxAge.getText();
+		if (minAge.getText().length() > 0) {
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p GROUP BY p.tckn HAVING get_age(p.birth_date) >= "
+					+ minAge.getText();
+			query = query + " INTERSECT " + newQuery;
+		}
+		if (maxAge.getText().length() > 0) {
+			String newQuery = "SELECT p.tckn, p.first_name, p.last_name, p.sex, p.birth_date, p.blood_type, p.cronic_illnesses, p.status FROM patient p GROUP BY p.tckn HAVING get_age(p.birth_date) <= "
+					+ minAge.getText();
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Sirala
@@ -414,7 +426,7 @@ public class PatientsWindow extends JFrame {
 		else if (sortBy.getSelectedIndex() == 3)
 			query += " ORDER BY sex";
 		else if (sortBy.getSelectedIndex() == 4)
-			query += " ORDER BY birth_date";
+			query += " ORDER BY get_age(birth_date)";
 		else if (sortBy.getSelectedIndex() == 5)
 			query += " ORDER BY blood_type";
 		else if (sortBy.getSelectedIndex() == 6)
@@ -437,7 +449,7 @@ public class PatientsWindow extends JFrame {
 		columnNames.add("Adi");
 		columnNames.add("Soyadi");
 		columnNames.add("Cinsiyeti");
-		columnNames.add("Dogum Tarihi");
+		columnNames.add("Yas");
 		columnNames.add("Kan Grubu");
 		columnNames.add("Kronik Hastaligi");
 		columnNames.add("Durumu");
@@ -458,7 +470,7 @@ public class PatientsWindow extends JFrame {
 
 	public void deletePatient(BigDecimal tckn) {
 		DbConnection.connect();
-		DbConnection.update("DELETE FROM patient WHERE tckn = '" + tckn.toString() + "'");
+		DbConnection.update("DELETE FROM patient WHERE tckn = " + tckn.toString());
 		DbConnection.disconnect();
 	}
 }

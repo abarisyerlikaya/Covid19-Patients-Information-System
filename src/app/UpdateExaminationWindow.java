@@ -55,8 +55,8 @@ public class UpdateExaminationWindow extends JFrame {
 
 		// Create components
 		testResultLabel = new JLabel("Test Sonucu:");
-		tcknLabel = new JLabel("Hastanýn TCKN'si:");
-		hospitalLabel = new JLabel("Yapýldýðý Hastane:");
+		tcknLabel = new JLabel("Hastanï¿½n TCKN'si:");
+		hospitalLabel = new JLabel("Yapï¿½ldï¿½ï¿½ï¿½ Hastane:");
 		tckn = new JTextField(defaultTckn);
 		tckn.setEditable(false);
 		ssn = new JTextField(defaultSsn);
@@ -103,9 +103,9 @@ public class UpdateExaminationWindow extends JFrame {
 		contentPane.add(tckn);
 		contentPane.add(submit);
 		contentPane.add(testResult);
-		testResult.addItem("Bekliyor");
-		testResult.addItem("Negatif");
-		testResult.addItem("Pozitif");
+		testResult.addItem("Waiting Tests");
+		testResult.addItem("Negative");
+		testResult.addItem("Positive - Quarantined");
 		DbConnection.connect();
 		ResultSet rs = DbConnection.select("SELECT name FROM hospital");
 		try {

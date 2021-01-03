@@ -119,9 +119,9 @@ public class CreatePatientWindow extends JFrame {
 		birthYear.setColumns(10);
 		birthYear.setBounds(308, 67, 36, 20);
 		status.setBounds(220, 236, 194, 22);
-		status.addItem("Test sonucu bekleniyor");
-		status.addItem("Evde karantinada");
-		status.addItem("Yurtta karantinada");
+		status.addItem("Waiting Tests");
+		status.addItem("Negative");
+		status.addItem("Positive - Quarantined");
 		
 
 		// Add components to panel

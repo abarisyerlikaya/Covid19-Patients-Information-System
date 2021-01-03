@@ -10,6 +10,8 @@ import javax.swing.JTextField;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import java.util.Calendar;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class UpdatePatientWindow extends JFrame {
@@ -44,7 +46,7 @@ public class UpdatePatientWindow extends JFrame {
 	private String defaultBloodType;
 	private String defaultCronicalIllnesses;
 	private String defaultStatus;
-	private JComboBox status;
+	private JComboBox<String> status;
 
 	public UpdatePatientWindow(String defaultTckn, String defaultFirstName, String defaultLastName,
 			String defaultGender, String defaultDate, String defaultBloodType, String defaultCronicalIllnesses,
@@ -76,21 +78,32 @@ public class UpdatePatientWindow extends JFrame {
 		genderLabel = new JLabel("Cinsiyet:");
 		firstName = new JTextField();
 		tckn = new JTextField();
+		tckn.setEditable(false);
 		gender = new JComboBox<String>();
 		tcknLabel = new JLabel("TCKN:");
 		title = new JLabel("HASTA BILGILERI");
 		submit = new JButton("Guncelle");
+		submit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updatePatient();
+				setVisible(false);
+			}
+		});
 		birthDateLabel = new JLabel("Do�um Tarihi:");
 		statusLabel = new JLabel("Gerkliyse �u Anki Durumu:");
 		bloodTypeLabel = new JLabel("Kan Grubu:");
 		lastNameLabel = new JLabel("Soyad�:");
 		birthDay = new JTextField();
+		birthDay.setEditable(false);
 		lastName = new JTextField();
 		bloodType = new JComboBox<String>();
+		bloodType.setEnabled(false);
 		birthDateLabel_1 = new JLabel("/");
 		birthMonth = new JTextField();
+		birthMonth.setEditable(false);
 		birthDateLabel_2 = new JLabel("/");
 		birthYear = new JTextField();
+		birthYear.setEditable(false);
 		status = new JComboBox();
 
 		// Configure components
@@ -136,9 +149,9 @@ public class UpdatePatientWindow extends JFrame {
 		birthYear.setColumns(10);
 		birthYear.setBounds(308, 67, 36, 20);
 		status.setBounds(220, 236, 194, 22);
-		status.addItem("waiting tests");
-		status.addItem("positive");
-		status.addItem("negative");
+		status.addItem("Waiting Tests");
+		status.addItem("Negative");
+		status.addItem("Positive - Quarantined");
 
 		// Add components to panel
 		contentPane.add(firstNameLabel);
@@ -181,5 +194,17 @@ public class UpdatePatientWindow extends JFrame {
 		cronicalIllnesses.setText(defaultCronicalIllnesses);
 		status.setSelectedItem(defaultStatus);
 
+	}
+
+	public void updatePatient() {
+		DbConnection.connect();
+		String query = "UPDATE patient SET first_name = '" + firstName.getText() + "', last_name = '"
+				+ lastName.getText() + "', sex = '"
+				+ (gender.getSelectedIndex() == 2 ? "O" : (gender.getSelectedIndex() == 1 ? "M" : "F"))
+				+ "', cronic_illnesses = '" + cronicalIllnesses.getText() + "', status = '" + status.getSelectedItem()
+				+ "' WHERE tckn = " + tckn.getText();
+
+		DbConnection.update(query);
+		DbConnection.disconnect();
 	}
 }

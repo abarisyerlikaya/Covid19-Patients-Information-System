@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -19,10 +20,11 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JTable;
+import javax.swing.JScrollPane;
 
 @SuppressWarnings("serial")
 public class ExaminationsWindow extends JFrame {
-	
+
 	private AppWindow app;
 	private JPanel contentPane;
 	private JLabel title;
@@ -65,6 +67,7 @@ public class ExaminationsWindow extends JFrame {
 	private JComboBox<String> testResult;
 	private JTextField doctorLastName;
 	private JTextField doctorFirstName;
+	private JLabel positivityRatio;
 
 	public ExaminationsWindow(AppWindow app) {
 		this.app = app;
@@ -95,11 +98,9 @@ public class ExaminationsWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				try {
 					printTable();
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				} catch (Exception e1) {
+					JOptionPane.showMessageDialog(null, "Sorgu başarısız!", "Hata", JOptionPane.ERROR_MESSAGE);
 				}
-				
 			}
 		});
 		sortBy = new JComboBox<String>();
@@ -123,16 +124,16 @@ public class ExaminationsWindow extends JFrame {
 				String exam_id = (String) table.getModel().getValueAt(table.getSelectedRow(), 1).toString();
 				String test_date = (String) table.getModel().getValueAt(table.getSelectedRow(), 2).toString();
 				String doc_ssn = (String) table.getModel().getValueAt(table.getSelectedRow(), 3).toString();
-				String test_result="";
+				String test_result = "";
 				String hospital_id = (String) table.getModel().getValueAt(table.getSelectedRow(), 5).toString();
-				if((table.getModel().getValueAt(table.getSelectedRow(), 4))==null) {
-					test_result ="";
-				}
-				else {
-					test_result =(String) table.getModel().getValueAt(table.getSelectedRow(), 4).toString();
+				if ((table.getModel().getValueAt(table.getSelectedRow(), 4)) == null) {
+					test_result = "";
+				} else {
+					test_result = (String) table.getModel().getValueAt(table.getSelectedRow(), 4).toString();
 				}
 
-				UpdateExaminationWindow frame = new UpdateExaminationWindow( patient_tckn,exam_id,doc_ssn, test_result, hospital_id);
+				UpdateExaminationWindow frame = new UpdateExaminationWindow(patient_tckn, exam_id, doc_ssn, test_result,
+						hospital_id);
 				frame.setVisible(true);
 			}
 		});
@@ -191,7 +192,7 @@ public class ExaminationsWindow extends JFrame {
 		examinationMonth.setBounds(52, 197, 20, 20);
 		filterByTestResult.setBounds(266, 166, 212, 20);
 		filterByDoctorName.setBounds(522, 166, 200, 20);
-		
+
 		status.setBounds(10, 259, 109, 20);
 		filterByStatus.setBounds(10, 228, 200, 20);
 		hospital.setColumns(10);
@@ -211,7 +212,6 @@ public class ExaminationsWindow extends JFrame {
 		doctorLastName.setBounds(607, 197, 75, 20);
 		doctorFirstName.setColumns(10);
 		doctorFirstName.setBounds(522, 197, 75, 20);
-		table.setBounds(10, 327, 712, 267);
 		minAge.setColumns(10);
 		minAge.setBounds(10, 135, 32, 20);
 		filterByAge.setBounds(10, 104, 221, 20);
@@ -220,9 +220,9 @@ public class ExaminationsWindow extends JFrame {
 		maxAge.setBounds(66, 135, 32, 20);
 		sortBy.addItem("Hasta TCKN'ye gore sirala");
 		sortBy.addItem("Test tarihine gore sirala");
-		sortBy.addItem("Doktor SSN'e g�re sirala");
+		sortBy.addItem("Doktor SSN'e g�re sirala");
 		sortBy.addItem("Test sonucuna gore sirala");
-		sortBy.addItem("Hospital ID'ye gore sirala");
+		sortBy.addItem("Hastane adina gore sirala");
 
 		gender.addItem("Tumu");
 		gender.addItem("Erkek");
@@ -252,7 +252,6 @@ public class ExaminationsWindow extends JFrame {
 		contentPane.add(showResults);
 		contentPane.add(sortBy);
 		contentPane.add(maxAge);
-		contentPane.add(table);
 		contentPane.add(dash1);
 		contentPane.add(minAge);
 		contentPane.add(filterByAge);
@@ -282,15 +281,23 @@ public class ExaminationsWindow extends JFrame {
 		contentPane.add(filterByCity);
 		contentPane.add(examinationYear);
 
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBounds(10, 327, 712, 267);
+		contentPane.add(scrollPane);
+
+		positivityRatio = new JLabel("");
+		positivityRatio.setBounds(522, 12, 151, 14);
+		contentPane.add(positivityRatio);
+
 		// Add button actions
 		back.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				setVisible(false);
 				app.getFrame().setVisible(true);
 			}
 		});
-		
+
 		createExamination.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CreateExaminationWindow frame = new CreateExaminationWindow();
@@ -298,103 +305,125 @@ public class ExaminationsWindow extends JFrame {
 			}
 		});
 	}
-	public void printTable() throws SQLException {
+
+	public void printTable() {
 		DbConnection.connect();
 
 		String query = generateQuery();
 		ResultSet rs = DbConnection.select(query);
-		table.setModel(buildTableModel(rs));
+		try {
+			table.setModel(buildTableModel(rs));
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, "ErrorMsg", "Failure", JOptionPane.ERROR_MESSAGE);
+		}
+
+		ResultSet ratio = DbConnection.select("SELECT get_positive_ratio('" + query.replaceAll("'", "''") + "')");
+		try {
+			ratio.next();
+			positivityRatio.setText("Pozitif yüzdesi: %" + (int) (ratio.getFloat(1) * 100));
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, "ErrorMsg", "Failure", JOptionPane.ERROR_MESSAGE);
+		}
 
 		DbConnection.disconnect();
 
 	}
+
 	public String generateQuery() {
-		String query = "SELECT * FROM examination";
+		String query = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e";
 		// isim
 		if (firstName.getText().length() > 0) {
-			
-			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.first_name = '" + firstName.getText() + "'";
+
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.first_name = '"
+					+ firstName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// soyisim
 		if (lastName.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.last_name = '" + lastName.getText() + "'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM patient pt,examination e WHERE e.patient_tckn=pt.tckn AND pt.last_name = '"
+					+ lastName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// tckn
 		if (tckn.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM patient pt,examination e WHERE e.patient_tckn = '" +tckn.getText()+ "' AND e.patient_tckn=pt.tckn";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM patient pt,examination e WHERE e.patient_tckn = '"
+					+ tckn.getText() + "' AND e.patient_tckn=pt.tckn";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// cinsiyet
 		if (gender.getSelectedIndex() == 1) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='M'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='M'";
 			query = query + " INTERSECT " + newQuery;
 		} else if (gender.getSelectedIndex() == 2) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='F'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex='F'";
 			query = query + " INTERSECT " + newQuery;
 		} else if (gender.getSelectedIndex() == 3) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex!='F' and p.sex!='M'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.sex!='F' and p.sex!='M'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// kan grubu
 		if (bloodType.getSelectedIndex() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.blood_type='" + (String) bloodType.getSelectedItem() + "'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.blood_type='"
+					+ (String) bloodType.getSelectedItem() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// kronik hastalık
 		if (cronicalIllnes.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.cronic_illnesses ='" + cronicalIllnes.getText() + "'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.cronic_illnesses ='"
+					+ cronicalIllnes.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Test sonucu
 		if (testResult.getSelectedIndex() == 1) {
-			String newQuery = "SELECT * FROM examination WHERE test_result = false";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e WHERE test_result = false";
 			query = query + " INTERSECT " + newQuery;
 		} else if (testResult.getSelectedIndex() == 2) {
-			String newQuery = "SELECT * FROM examination where test_result=true";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e where test_result=true";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Doktor ismi
 		if (doctorFirstName.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.first_name='"
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.first_name='"
 					+ doctorFirstName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Doktor soyismi
 		if (doctorLastName.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.last_name='"
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM doctor d,examination e WHERE e.doc_ssn=d.ssn AND d.last_name='"
 					+ doctorLastName.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Durum
 		if (status.getSelectedIndex() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.status = '" + (String) status.getSelectedItem() + "'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and p.status = '"
+					+ (String) status.getSelectedItem() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// hastane
 		if (hospital.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,hospital h WHERE e.hospital_id=h.id and h.name='"
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,hospital h WHERE e.hospital_id=h.id and h.name='"
 					+ hospital.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
 		// şehir
 		if (city.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,hospital h WHERE e.hospital_id=h.id and h.city='"
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,hospital h WHERE e.hospital_id=h.id and h.city='"
 					+ city.getText() + "'";
 			query = query + " INTERSECT " + newQuery;
 		}
-		// Tarih BUNA BAKIN
+		// Tarih
 		if (examinationDay.getText().length() > 0 && examinationMonth.getText().length() > 0
 				&& examinationYear.getText().length() > 0) {
-			String newQuery = "SELECT * FROM examination WHERE test_date='"
-					+ examinationYear.getText() + "-" + examinationMonth.getText() + "-" + examinationDay.getText() +"'";
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e WHERE test_date='"
+					+ examinationYear.getText() + "-" + examinationMonth.getText() + "-" + examinationDay.getText()
+					+ "'";
 			query = query + " INTERSECT " + newQuery;
 		}
-		// Yaş BUNA BAKIN
+		// Yaş
 		if (minAge.getText().length() > 0 && maxAge.getText().length() > 0) {
-			String newQuery = "SELECT e.* FROM examination e,patient p WHERE e.patient_tckn=p.tckn and " + minAge.getText()
-					+ "<=(now()::date-birth_date)/365 AND (now()::date-birth_date)/365<=" + maxAge.getText();
+			String newQuery = "SELECT e.patient_tckn, e.exam_id, e.test_date, e.doc_ssn, e.test_result, get_hospital_name(e.hospital_id) FROM examination e,patient p WHERE e.patient_tckn=p.tckn and "
+					+ minAge.getText() + "<=(now()::date-birth_date)/365 AND (now()::date-birth_date)/365<="
+					+ maxAge.getText();
 			query = query + " INTERSECT " + newQuery;
 		}
 		// Sirala
@@ -411,6 +440,7 @@ public class ExaminationsWindow extends JFrame {
 
 		return query;
 	}
+
 	public DefaultTableModel buildTableModel(ResultSet rs) throws SQLException {
 
 		ResultSetMetaData metaData = rs.getMetaData();
@@ -418,14 +448,13 @@ public class ExaminationsWindow extends JFrame {
 		// names of columns
 		Vector<String> columnNames = new Vector<String>();
 		int columnCount = metaData.getColumnCount();
-		
+
 		columnNames.add("Hasta TCKN");
 		columnNames.add("ID");
 		columnNames.add("Test Tarihi");
 		columnNames.add("Doktor SSN");
 		columnNames.add("Test Sonucu");
-		columnNames.add("Hospial ID");
-
+		columnNames.add("Hastane Adi");
 
 		// data of the table
 		Vector<Vector<Object>> data = new Vector<Vector<Object>>();
@@ -440,6 +469,7 @@ public class ExaminationsWindow extends JFrame {
 		return new DefaultTableModel(data, columnNames);
 
 	}
+
 	public void deletePatient(BigDecimal tckn) {
 		DbConnection.connect();
 		DbConnection.update("DELETE FROM examination WHERE patient_tckn = '" + tckn.toString() + "'");
